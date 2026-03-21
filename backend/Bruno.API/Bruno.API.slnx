@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="../Bruno.Application/Bruno.Application.csproj" />
-  <Project Path="../Bruno.Domain/Bruno.Domain.csproj" />
-  <Project Path="../Bruno.Infrastructure/Bruno.Infrastructure.csproj" />
-  <Project Path="Bruno.API.csproj" />
-</Solution>
