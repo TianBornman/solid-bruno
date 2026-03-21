@@ -1,4 +1,6 @@
-﻿using Bruno.Infrastructure.Context;
+﻿using Bruno.Domain.Repositories;
+using Bruno.Infrastructure.Context;
+using Bruno.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,8 @@ public static class DependencyInjection
 		{
 			options.UseNpgsql(configuration.GetConnectionString("BrunoDb"), b => b.MigrationsAssembly("Bruno.API"));
 		});
+
+		services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 		return services;
 	}
