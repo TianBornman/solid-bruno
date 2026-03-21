@@ -6,4 +6,21 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Handlers\Vehicle\Delete\" />
+    <Folder Include="Handlers\Vehicle\Get\" />
+    <Folder Include="Handlers\Vehicle\List\" />
+    <Folder Include="Handlers\Vehicle\Update\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+    <PackageReference Include="MediatR" Version="14.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bruno.Domain\Bruno.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

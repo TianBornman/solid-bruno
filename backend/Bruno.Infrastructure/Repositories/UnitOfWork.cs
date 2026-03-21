@@ -7,7 +7,9 @@ public class UnitOfWork : IUnitOfWork
 {
 	private readonly BrunoContext dbContext;
 
+	public IBookingRepository BookingRepository => new BookingRepository(dbContext);
 	public ICustomerRepository CustomerRepository => new CustomerRepository(dbContext);
+	public IVehicleRepository VehicleRepository => new VehicleRepository(dbContext);
 
 	public UnitOfWork(BrunoContext dbContext)
 	{

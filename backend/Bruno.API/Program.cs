@@ -1,3 +1,5 @@
+using Bruno.API.ExceptionHandlers;
+using Bruno.Application;
 using Bruno.Infrastructure;
 
 namespace Bruno.API
@@ -9,7 +11,11 @@ namespace Bruno.API
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Adding modules
+			builder.Services.AddApplication();
 			builder.Services.AddInfrastructure(builder.Configuration);
+			
+			builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+			builder.Services.AddProblemDetails();
 
 			builder.Services.AddControllers();
 
@@ -29,6 +35,7 @@ namespace Bruno.API
 				});
 			}
 
+			app.UseExceptionHandler();
 			app.UseHttpsRedirection();
 
 			app.UseAuthorization();
