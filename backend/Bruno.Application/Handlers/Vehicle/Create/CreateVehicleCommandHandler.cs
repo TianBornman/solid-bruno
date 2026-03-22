@@ -1,10 +1,9 @@
-﻿using Bruno.Application.DTOs.Vehicle;
-using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Repositories;
 using MediatR;
 
 namespace Bruno.Application.Handlers.Vehicle.Create;
 
-public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand, GetVehicleDto>
+public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand, Guid>
 {
 	private readonly IUnitOfWork uow;
 
@@ -13,7 +12,7 @@ public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand,
 		this.uow = uow;
 	}
 
-	public async Task<GetVehicleDto> Handle(CreateVehicleCommand request, CancellationToken cancellationToken)
+	public async Task<Guid> Handle(CreateVehicleCommand request, CancellationToken cancellationToken)
 	{
 		var entity = new Domain.Entities.Vehicle
 		{
@@ -26,9 +25,6 @@ public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand,
 
 		await uow.VehicleRepository.Add(entity);
 
-		var dto = new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model, 
-									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted);
-
-		return dto;
+		return entity.Id;
 	}
 }
