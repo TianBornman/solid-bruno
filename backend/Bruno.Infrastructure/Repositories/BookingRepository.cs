@@ -34,11 +34,15 @@ public class BookingRepository : IBookingRepository
 
 	public async Task<Booking?> Get(Guid id)
 	{
-		return await dbContext.Bookings.SingleAsync(booking => booking.Id == id);
+		return await dbContext.Bookings.Include(booking => booking.Vehicle)
+									   .Include(booking => booking.Customer)
+									   .FirstOrDefaultAsync(booking => booking.Id == id);
 	}
 
 	public async Task<IEnumerable<Booking>> List(int skip, int take)
 	{
-		return await dbContext.Bookings.Skip(skip).Take(take).ToListAsync();
+		return await dbContext.Bookings.Include(booking => booking.Vehicle)
+									   .Include(booking => booking.Customer)
+									   .Skip(skip).Take(take).ToListAsync();
 	}
 }
