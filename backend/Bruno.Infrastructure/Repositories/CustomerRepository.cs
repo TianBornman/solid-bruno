@@ -34,7 +34,7 @@ public class CustomerRepository : ICustomerRepository
 
 	public async Task<Customer?> Get(Guid id)
 	{
-		return await dbContext.Customers.SingleAsync(user => user.Id == id);
+		return await dbContext.Customers.FirstOrDefaultAsync(user => user.Id == id);
 	}
 
 	public async Task<IEnumerable<Customer>> List(int skip, int take)

@@ -18,8 +18,11 @@ public class GetVehicleCommandHandler : IRequestHandler<GetVehicleCommand, GetVe
 	{
 		var entity = await uow.VehicleRepository.Get(request.Id);
 
-		var dto = entity != null ? new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
-									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted) : null;
+		if (entity == null)
+			return null;
+
+		var dto = new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
+									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted);
 
 		return dto;
 	}
