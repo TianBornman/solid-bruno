@@ -1,4 +1,5 @@
 ﻿using Bruno.Application.DTOs.Customer;
+using Bruno.Domain.Exceptions;
 using Bruno.Domain.Repositories;
 using MediatR;
 
@@ -15,10 +16,8 @@ public class GetCustomerQueryHandler : IRequestHandler<GetCustomerQuery, GetCust
 
 	public async Task<GetCustomerDto?> Handle(GetCustomerQuery request, CancellationToken cancellationToken)
 	{
-		var entity = await uow.CustomerRepository.Get(request.Id);
-
-		if (entity == null)
-			return null;
+		var entity = await uow.CustomerRepository.Get(request.Id) 
+			?? throw new NotFoundException($"Customer not found."); ;
 
 		var dto = new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName, entity.Email, entity.PhoneNumber, entity.CreatedAt);
 

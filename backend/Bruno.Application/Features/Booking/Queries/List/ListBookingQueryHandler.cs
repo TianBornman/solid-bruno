@@ -1,4 +1,5 @@
 ﻿using Bruno.Application.DTOs.Booking;
+using Bruno.Domain.Exceptions;
 using Bruno.Domain.Repositories;
 using MediatR;
 
@@ -15,11 +16,11 @@ public class ListBookingQueryHandler : IRequestHandler<ListBookingQuery, List<Ge
 
 	public async Task<List<GetBookingDto>> Handle(ListBookingQuery request, CancellationToken cancellationToken)
 	{
-		var entities = await uow.BookingRepository.List(request.Skip, request.Take);
+		var entities = await uow.BookingRepository.List(request.Skip, request.Take) 
+			?? throw new NotFoundException("No bookings found.");
 
-		var dtos = entities.Any() ? entities.Select(entity =>
-									new GetBookingDto(entity.Id, entity.StartDate, entity.EndDate, entity.TotalPrice, entity.Status,
-									entity.Vehicle.Id, entity.Customer.Id, entity.CreatedAt)).ToList() : [];
+		var dtos = entities.Select(entity => new GetBookingDto(entity.Id, entity.DateRange.StartDate, entity.DateRange.EndDate, 
+									entity.TotalPrice, entity.Status, entity.Vehicle.Id, entity.Customer.Id, entity.CreatedAt)).ToList();
 
 		return dtos;
 	}

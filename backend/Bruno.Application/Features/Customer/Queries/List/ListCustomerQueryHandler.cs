@@ -16,11 +16,11 @@ public class ListCustomerQueryHandler : IRequestHandler<ListCustomerQuery, List<
 
 	public async Task<List<GetCustomerDto>> Handle(ListCustomerQuery request, CancellationToken cancellationToken)
 	{
-		var entities = await uow.CustomerRepository.List(request.Skip, request.Take);
+		var entities = await uow.CustomerRepository.List(request.Skip, request.Take) 
+			?? throw new Exception("No customers found.");
 
-		var dtos = entities.Any() ? entities.Select(entity => 
-									new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName, 
-									entity.Email, entity.PhoneNumber, entity.CreatedAt)).ToList() : [];
+		var dtos = entities.Select(entity => new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName, 
+									entity.Email, entity.PhoneNumber, entity.CreatedAt)).ToList();
 
 		return dtos;
 	}

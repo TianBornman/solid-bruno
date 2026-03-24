@@ -20,7 +20,7 @@ public class UpdateBookingValidator : AbstractValidator<UpdateBookingCommand>
 			.GreaterThan(0);
 
 		RuleFor(x => x.Status)
-			.NotEmpty();
+			.IsInEnum();
 
 		RuleFor(x => x.CustomerId)
 			.NotEmpty();

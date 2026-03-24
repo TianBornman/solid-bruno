@@ -1,5 +1,7 @@
 ﻿using Bruno.Domain.Entities;
+using Bruno.Domain.Enums;
 using Bruno.Domain.Repositories;
+using Bruno.Domain.ValueObjects;
 using Bruno.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,5 +46,19 @@ public class BookingRepository : IBookingRepository
 		return await dbContext.Bookings.Include(booking => booking.Vehicle)
 									   .Include(booking => booking.Customer)
 									   .Skip(skip).Take(take).ToListAsync();
+	}
+
+	public async Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange)
+	{
+		return await dbContext.Bookings.Where(b => b.VehicleId == vehicleId)
+										.Where(b => b.Status != BookingStatus.Cancelled)
+										.AnyAsync(b =>
+											b.DateRange.StartDate < dateRange.EndDate &&
+											b.DateRange.EndDate > dateRange.StartDate);
+	}
+
+	public async Task<bool> ExistsForCustomerAsync(Guid customerId)
+	{
+		return await dbContext.Bookings.AnyAsync(booking => booking.CustomerId == customerId);
 	}
 }

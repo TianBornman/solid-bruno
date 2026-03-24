@@ -1,4 +1,6 @@
-﻿using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Exceptions;
+using Bruno.Domain.Repositories;
+using Bruno.Domain.ValueObjects;
 using MediatR;
 
 namespace Bruno.Application.Features.Booking.Commands.Create;
@@ -14,21 +16,26 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
 
 	public async Task<Guid> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
 	{
-		var existingVehicle = await uow.VehicleRepository.Get(request.VehicleId) 
-			?? throw new Exception($"Vehicle {request.VehicleId} doesn't exist!");
+		var vehicle = await uow.VehicleRepository.Get(request.VehicleId) 
+			?? throw new NotFoundException($"Vehicle not found.");
 
-		var existingCustomer = await uow.CustomerRepository.Get(request.CustomerId)
-			?? throw new Exception($"Customer {request.CustomerId} doesn't exist!");
+		vehicle.CanBook();
+
+		var dateRange = new DateRange(request.StartDate, request.EndDate);
 
 		var entity = new Domain.Entities.Booking
 		{
-			StartDate = request.StartDate,
-			EndDate = request.EndDate,
+			DateRange = dateRange,
 			TotalPrice = request.TotalPrice,
 			Status = request.Status,
-			Vehicle = existingVehicle,
-			Customer = existingCustomer,
+			VehicleId = request.VehicleId,
+			CustomerId = request.CustomerId
 		};
+
+		var hasOverlap = await uow.BookingRepository.HasOverlappingBookingAsync(request.VehicleId, dateRange);
+
+		if (hasOverlap)
+			throw new DomainException("Cannot overlap bookings for the same vehicle.");
 
 		await uow.BookingRepository.Add(entity);
 

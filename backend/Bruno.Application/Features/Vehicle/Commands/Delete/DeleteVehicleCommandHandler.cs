@@ -1,4 +1,5 @@
-﻿using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Exceptions;
+using Bruno.Domain.Repositories;
 using MediatR;
 
 namespace Bruno.Application.Features.Vehicle.Commands.Delete;
@@ -14,9 +15,9 @@ public class DeleteVehicleCommandHandler : IRequestHandler<DeleteVehicleCommand>
 
 	public async Task Handle(DeleteVehicleCommand request, CancellationToken cancellationToken)
 	{
-		var entity = await uow.VehicleRepository.Get(request.Id);
+		var entity = await uow.VehicleRepository.Get(request.Id) 
+			?? throw new NotFoundException("Vehicle not found.");
 
-		if (entity != null)
-			await uow.VehicleRepository.Delete(entity);
+		await uow.VehicleRepository.Delete(entity);
 	}
 }

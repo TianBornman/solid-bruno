@@ -1,4 +1,5 @@
 ﻿using Bruno.Application.DTOs.Vehicle;
+using Bruno.Domain.Exceptions;
 using Bruno.Domain.Repositories;
 using MediatR;
 
@@ -15,11 +16,11 @@ public class ListVehicleQueryHandler : IRequestHandler<ListVehicleQuery, List<Ge
 
 	public async Task<List<GetVehicleDto>> Handle(ListVehicleQuery request, CancellationToken cancellationToken)
 	{
-		var entities = await uow.VehicleRepository.List(request.Skip, request.Take);
+		var entities = await uow.VehicleRepository.List(request.Skip, request.Take) 
+			?? throw new NotFoundException("No vehicles found.");
 
-		var dtos = entities.Any() ? entities.Select(entity => 
-									new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
-									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted)).ToList() : [];
+		var dtos = entities.Select(entity => new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
+									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted)).ToList();
 
 		return dtos;
 	}

@@ -1,4 +1,5 @@
-﻿using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Exceptions;
+using Bruno.Domain.Repositories;
 using MediatR;
 
 namespace Bruno.Application.Features.Vehicle.Commands.Update;
@@ -14,10 +15,8 @@ public class UpdateVehicleCommandHandler : IRequestHandler<UpdateVehicleCommand>
 
 	public async Task Handle(UpdateVehicleCommand request, CancellationToken cancellationToken)
 	{
-		var entity = await uow.VehicleRepository.Get(request.Id);
-
-		if (entity == null)
-			return;
+		var entity = await uow.VehicleRepository.Get(request.Id) 
+			?? throw new NotFoundException("Vehicle not found.");
 
 		entity.RegistrationNumber = request.RegistrationNumber;
 		entity.Make = request.Make;

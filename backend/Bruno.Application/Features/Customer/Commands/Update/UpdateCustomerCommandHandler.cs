@@ -1,4 +1,5 @@
-﻿using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Exceptions;
+using Bruno.Domain.Repositories;
 using MediatR;
 
 namespace Bruno.Application.Features.Customer.Commands.Update;
@@ -14,10 +15,8 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
 
 	public async Task Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
 	{
-		var entity = await uow.CustomerRepository.Get(request.Id);
-
-		if (entity == null)
-			return;
+		var entity = await uow.CustomerRepository.Get(request.Id) 
+			?? throw new NotFoundException($"Customer not found.");
 
 		entity.FirstName = request.FirstName;
 		entity.LastName = request.LastName;

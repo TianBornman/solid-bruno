@@ -1,4 +1,5 @@
-﻿using Bruno.Domain.Repositories;
+﻿using Bruno.Domain.Exceptions;
+using Bruno.Domain.Repositories;
 using MediatR;
 
 namespace Bruno.Application.Features.Booking.Commands.Delete;
@@ -14,9 +15,11 @@ public class DeleteBookingCommandHandler : IRequestHandler<DeleteBookingCommand>
 
 	public async Task Handle(DeleteBookingCommand request, CancellationToken cancellationToken)
 	{
-		var entity = await uow.BookingRepository.Get(request.Id);
+		var entity = await uow.BookingRepository.Get(request.Id) 
+			?? throw new NotFoundException($"Booking not found."); ;
 
-		if (entity != null)
-			await uow.BookingRepository.Delete(entity);
+		entity.CanDelete();
+
+		await uow.BookingRepository.Delete(entity);
 	}
 }
