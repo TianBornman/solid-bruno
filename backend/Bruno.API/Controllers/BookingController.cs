@@ -1,10 +1,10 @@
 using Bruno.Application.DTOs;
 using Bruno.Application.DTOs.Booking;
-using Bruno.Application.Handlers.Booking.Create;
-using Bruno.Application.Handlers.Booking.Delete;
-using Bruno.Application.Handlers.Booking.Get;
-using Bruno.Application.Handlers.Booking.List;
-using Bruno.Application.Handlers.Booking.Update;
+using Bruno.Application.Features.Booking.Commands.Create;
+using Bruno.Application.Features.Booking.Commands.Delete;
+using Bruno.Application.Features.Booking.Commands.Update;
+using Bruno.Application.Features.Booking.Queries.Get;
+using Bruno.Application.Features.Booking.Queries.List;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +42,7 @@ public class BookingController : ControllerBase
 	[HttpGet]
 	public async Task<IActionResult> Get(Guid id)
 	{
-		var command = new GetBookingCommand(id);
+		var command = new GetBookingQuery(id);
 
 		var result = await mediator.Send(command);
 		return Ok(result);
@@ -51,7 +51,7 @@ public class BookingController : ControllerBase
 	[HttpPost("list")]
 	public async Task<IActionResult> List(ListDto dto)
 	{
-		var command = new ListBookingCommand(dto.Skip, dto.Take);
+		var command = new ListBookingQuery(dto.Skip, dto.Take);
 
 		var result = await mediator.Send(command);
 		return Ok(result);

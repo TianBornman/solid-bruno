@@ -1,10 +1,10 @@
 using Bruno.Application.DTOs;
 using Bruno.Application.DTOs.Vehicle;
-using Bruno.Application.Handlers.Vehicle.Create;
-using Bruno.Application.Handlers.Vehicle.Delete;
-using Bruno.Application.Handlers.Vehicle.Get;
-using Bruno.Application.Handlers.Vehicle.List;
-using Bruno.Application.Handlers.Vehicle.Update;
+using Bruno.Application.Features.Vehicle.Commands.Create;
+using Bruno.Application.Features.Vehicle.Commands.Delete;
+using Bruno.Application.Features.Vehicle.Queries.Get;
+using Bruno.Application.Features.Vehicle.Queries.List;
+using Bruno.Application.Features.Vehicle.Commands.Update;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +42,7 @@ public class VehicleController : ControllerBase
 	[HttpGet]
 	public async Task<IActionResult> Get(Guid id)
 	{
-		var command = new GetVehicleCommand(id);
+		var command = new GetVehicleQuery(id);
 
 		var result = await mediator.Send(command);
 		return Ok(result);
@@ -51,7 +51,7 @@ public class VehicleController : ControllerBase
 	[HttpPost("list")]
 	public async Task<IActionResult> List(ListDto dto)
 	{
-		var command = new ListVehicleCommand(dto.Skip, dto.Take);
+		var command = new ListVehicleQuery(dto.Skip, dto.Take);
 
 		var result = await mediator.Send(command);
 		return Ok(result);

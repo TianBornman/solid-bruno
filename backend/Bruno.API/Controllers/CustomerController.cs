@@ -1,10 +1,10 @@
 using Bruno.Application.DTOs;
 using Bruno.Application.DTOs.Customer;
-using Bruno.Application.Handlers.Customer.Create;
-using Bruno.Application.Handlers.Customer.Delete;
-using Bruno.Application.Handlers.Customer.Get;
-using Bruno.Application.Handlers.Customer.List;
-using Bruno.Application.Handlers.Customer.Update;
+using Bruno.Application.Features.Customer.Commands.Create;
+using Bruno.Application.Features.Customer.Commands.Delete;
+using Bruno.Application.Features.Customer.Commands.Update;
+using Bruno.Application.Features.Customer.Queries.Get;
+using Bruno.Application.Features.Customer.Queries.List;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +42,7 @@ public class CustomerController : ControllerBase
 	[HttpGet]
 	public async Task<IActionResult> Get(Guid id)
 	{
-		var command = new GetCustomerCommand(id);
+		var command = new GetCustomerQuery(id);
 
 		var result = await mediator.Send(command);
 		return Ok(result);
@@ -51,7 +51,7 @@ public class CustomerController : ControllerBase
 	[HttpPost("list")]
 	public async Task<IActionResult> List(ListDto dto)
 	{
-		var command = new ListCustomerCommand(dto.Skip, dto.Take);
+		var command = new ListCustomerQuery(dto.Skip, dto.Take);
 
 		var result = await mediator.Send(command);
 		return Ok(result);
