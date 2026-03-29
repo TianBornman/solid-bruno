@@ -3,4 +3,5 @@
   <Project Path="Bruno.Domain/Bruno.Domain.csproj" />
   <Project Path="Bruno.Infrastructure/Bruno.Infrastructure.csproj" />
   <Project Path="Bruno.API/Bruno.API.csproj" />
+  <Project Path="Bruno/Bruno.csproj" Id="d10acfeb-d060-474c-8850-197bde4ca2bc" />
 </Solution>
