@@ -1,5 +1,29 @@
-﻿<h3>Customer Card</h3>
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderAvatar>
+            <MudAvatar Color="Color.Primary" Size="Size.Large">
+                @Customer.FirstName[0]@Customer.LastName[0]
+            </MudAvatar>
+        </CardHeaderAvatar>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@Customer.FirstName @Customer.LastName</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Customer.Email</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">@Customer.PhoneNumber</MudText>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">Member since @Customer.CreatedDate.ToString("MMMM yyyy")</MudText>
+            </MudStack>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
 
 @code {
-
+    [Parameter, EditorRequired] public CustomerDto Customer { get; set; } = null!;
 }

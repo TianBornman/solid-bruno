@@ -1,5 +1,60 @@
-﻿<h3>Customer Form</h3>
+<MudForm @ref="form">
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.FirstName"
+                          Label="First Name"
+                          Required="true"
+                          RequiredError="First name is required."
+                          Immediate="true"
+                          MaxLength="100" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.LastName"
+                          Label="Last Name"
+                          Required="true"
+                          RequiredError="Last name is required."
+                          Immediate="true"
+                          MaxLength="100" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.Email"
+                          Label="Email Address"
+                          InputType="InputType.Email"
+                          Required="true"
+                          RequiredError="Email is required."
+                          Validation="@(new Func<string, string?>(ValidateEmail))"
+                          Immediate="true"
+                          MaxLength="254" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.PhoneNumber"
+                          Label="Phone Number"
+                          Required="true"
+                          RequiredError="Phone number is required."
+                          Immediate="true"
+                          MaxLength="20" />
+        </MudItem>
+    </MudGrid>
+</MudForm>
 
 @code {
+    [Parameter, EditorRequired] public CustomerFormModel Model { get; set; } = null!;
 
+    private MudForm form = null!;
+
+    public async Task<bool> ValidateAsync()
+    {
+        await form.ValidateAsync();
+        return form.IsValid;
+    }
+
+    private static string? ValidateEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        return new EmailAddressAttribute().IsValid(email) ? null : "Please enter a valid email address.";
+    }
 }

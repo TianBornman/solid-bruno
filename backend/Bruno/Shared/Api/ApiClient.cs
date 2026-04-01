@@ -27,6 +27,7 @@ public class ApiClient : IApiClient
 	{
 		using var response = await _httpClient.PostAsJsonAsync(uri, body, JsonOptions, ct);
 		await EnsureSuccess(response, ct);
+		if (response.StatusCode == System.Net.HttpStatusCode.NoContent) return default;
 		return await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, ct);
 	}
 
@@ -37,6 +38,7 @@ public class ApiClient : IApiClient
 	{
 		using var response = await _httpClient.PutAsJsonAsync(uri, body, JsonOptions, ct);
 		await EnsureSuccess(response, ct);
+		if (response.StatusCode == System.Net.HttpStatusCode.NoContent) return default;
 		return await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions, ct);
 	}
 

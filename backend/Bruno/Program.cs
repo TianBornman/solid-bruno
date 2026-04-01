@@ -1,3 +1,6 @@
+using Bruno.Features.Customer.Api;
+using Bruno.Features.Customer.State;
+using Bruno.Shared.Api;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -25,6 +28,10 @@ namespace Bruno
 				var factory = sp.GetRequiredService<IHttpClientFactory>();
 				return factory.CreateClient("Api");
 			});
+
+			builder.Services.AddScoped<IApiClient, ApiClient>();
+			builder.Services.AddScoped<ICustomerApi, CustomerApi>();
+			builder.Services.AddScoped<CustomerState>();
 
 			builder.Services.AddMudServices();
 

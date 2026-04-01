@@ -1,5 +1,63 @@
-﻿<h3>Customer List</h3>
+<MudTable T="CustomerDto"
+          Items="Customers"
+          Hover="true"
+          Striped="true"
+          Dense="false"
+          SortLabel="Sort By"
+          Elevation="2">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<CustomerDto, object>(x => x.LastName)">Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<CustomerDto, object>(x => x.Email)">Email</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Phone</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<CustomerDto, object>(x => x.CreatedDate)">Member Since</MudTableSortLabel>
+        </MudTh>
+        <MudTh Style="width:120px">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudAvatar Size="Size.Small" Color="Color.Primary">
+                    @context.FirstName[0]@context.LastName[0]
+                </MudAvatar>
+                <MudText>@context.FirstName @context.LastName</MudText>
+            </MudStack>
+        </MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Phone">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="Member Since">@context.CreatedDate.ToString("dd MMM yyyy")</MudTd>
+        <MudTd>
+            <MudStack Row="true" Spacing="0">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+
+                               OnClick="@(() => OnView.InvokeAsync(context.Id))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Size="Size.Small"
+                               Color="Color.Error"
+
+                               OnClick="@(() => OnDelete.InvokeAsync(context))" />
+            </MudStack>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudStack AlignItems="AlignItems.Center" Class="pa-8">
+            <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Size="Size.Large" Color="Color.Default" />
+            <MudText Typo="Typo.body1" Color="Color.Secondary">No customers found.</MudText>
+        </MudStack>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+    </PagerContent>
+</MudTable>
 
 @code {
-
+    [Parameter, EditorRequired] public IReadOnlyList<CustomerDto> Customers { get; set; } = [];
+    [Parameter] public EventCallback<Guid> OnView { get; set; }
+    [Parameter] public EventCallback<CustomerDto> OnDelete { get; set; }
 }

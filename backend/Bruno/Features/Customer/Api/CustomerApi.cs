@@ -25,12 +25,12 @@ public class CustomerApi : ICustomerApi
 
 	public async Task<CustomerDto?> GetCustomer(Guid id, CancellationToken ct = default)
 	{
-		return await api.GetAsync<CustomerDto>(Endpoints.Base, ct);
+		return await api.GetAsync<CustomerDto>($"{Endpoints.Base}/{id}", ct);
 	}
 
 	public async Task<IReadOnlyList<CustomerDto>> GetCustomers(ListRequest request, CancellationToken ct = default)
 	{
-		return await api.GetAsync<List<CustomerDto>>(Endpoints.List, ct) ?? [];
+		return await api.PostAsync<ListRequest, List<CustomerDto>>(Endpoints.List, request, ct) ?? [];
 	}
 
 	public async Task<Guid?> UpdateCustomer(UpdateCustomerRequest request, CancellationToken ct = default)

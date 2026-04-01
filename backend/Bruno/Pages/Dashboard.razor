@@ -1,0 +1,114 @@
+@page "/"
+
+<PageTitle>Dashboard – Bruno Vehicle Hire</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-1">Dashboard</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">Welcome to Bruno Vehicle Hire management.</MudText>
+
+<MudGrid Spacing="4">
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2" Style="cursor:pointer" @onclick='() => Nav.NavigateTo("/customers")'>
+            <MudCardContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Module</MudText>
+                        <MudText Typo="Typo.h5">Customers</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                            Manage customer records and contact details.
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Primary" Size="Size.Large" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.People" />
+                    </MudAvatar>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward"
+                           Href="/customers">
+                    View Customers
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2" Style="cursor:pointer" @onclick='() => Nav.NavigateTo("/vehicles")'>
+            <MudCardContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Module</MudText>
+                        <MudText Typo="Typo.h5">Vehicles</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                            Manage the vehicle fleet and availability.
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Secondary" Size="Size.Large" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" />
+                    </MudAvatar>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.ArrowForward"
+                           Href="/vehicles">
+                    View Vehicles
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2" Style="cursor:pointer" @onclick='() => Nav.NavigateTo("/bookings")'>
+            <MudCardContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudText Typo="Typo.overline" Color="Color.Secondary">Module</MudText>
+                        <MudText Typo="Typo.h5">Bookings</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                            Create and manage vehicle hire bookings.
+                        </MudText>
+                    </div>
+                    <MudAvatar Color="Color.Tertiary" Size="Size.Large" Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                    </MudAvatar>
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Text" Color="Color.Tertiary" EndIcon="@Icons.Material.Filled.ArrowForward"
+                           Href="/bookings">
+                    View Bookings
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+</MudGrid>
+
+<MudDivider Class="my-8" />
+
+<MudText Typo="Typo.h6" Class="mb-4">Quick Actions</MudText>
+
+<MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.PersonAdd"
+               Href="/customers/create">
+        New Customer
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Secondary"
+               StartIcon="@Icons.Material.Filled.AddCircle"
+               Href="/vehicles/create">
+        Add Vehicle
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Tertiary"
+               StartIcon="@Icons.Material.Filled.BookOnline"
+               Href="/bookings/create">
+        New Booking
+    </MudButton>
+</MudStack>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = null!;
+}

@@ -30,7 +30,7 @@ public class CustomerController : ControllerBase
 		return Ok(result);
 	}
 
-	[HttpDelete]
+	[HttpDelete("{id}")]
 	public async Task<IActionResult> Delete(Guid id)
 	{
 		var command = new DeleteCustomerCommand(id);
@@ -39,7 +39,7 @@ public class CustomerController : ControllerBase
 		return NoContent();
 	}
 
-	[HttpGet]
+	[HttpGet("{id}")]
 	public async Task<IActionResult> Get(Guid id)
 	{
 		var command = new GetCustomerQuery(id);

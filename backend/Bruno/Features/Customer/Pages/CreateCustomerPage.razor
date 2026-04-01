@@ -1,5 +1,78 @@
-﻿<h3>Create Customer Page</h3>
+@page "/customers/create"
+@inject CustomerState State
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>New Customer – Bruno Vehicle Hire</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Nav.NavigateTo("/customers"))" />
+    <MudText Typo="Typo.h4">New Customer</MudText>
+</MudStack>
+
+<MudPaper Class="pa-6" Elevation="2">
+    <CustomerForm @ref="form" Model="model" />
+
+    @if (State.Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mt-4">@State.Error</MudAlert>
+    }
+
+    <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-6" Spacing="2">
+        <MudButton Variant="Variant.Text"
+                   OnClick="@(() => Nav.NavigateTo("/customers"))">
+            Cancel
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveAsync"
+                   Disabled="State.IsSaving">
+            @if (State.IsSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Create Customer</span>
+            }
+        </MudButton>
+    </MudStack>
+</MudPaper>
 
 @code {
+    private CustomerForm form = null!;
+    private readonly CustomerFormModel model = new();
+    private CancellationTokenSource cts = new();
 
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var id = await State.CreateCustomer(model.ToCreateRequest(), cts.Token);
+        if (id.HasValue)
+        {
+            Snackbar.Add("Customer created successfully.", Severity.Success);
+            Nav.NavigateTo($"/customers/{id.Value}");
+        }
+        else
+        {
+            Snackbar.Add(State.Error ?? "Failed to create customer.", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

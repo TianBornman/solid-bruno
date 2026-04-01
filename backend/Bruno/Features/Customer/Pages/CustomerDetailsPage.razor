@@ -1,5 +1,145 @@
-﻿<h3>Vehicle Customer Page</h3>
+@page "/customers/{Id:guid}"
+@inject CustomerState State
+@inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>
+    @(customer is null ? "Customer" : $"{customer.FirstName} {customer.LastName}") – Bruno Vehicle Hire
+</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Nav.NavigateTo("/customers"))" />
+    <MudText Typo="Typo.h4">Customer Details</MudText>
+</MudStack>
+
+@if (State.IsLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+}
+else if (customer is null)
+{
+    <MudAlert Severity="Severity.Error">
+        @(State.Error ?? "Customer not found.")
+    </MudAlert>
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="4">
+            <CustomerCard Customer="customer" />
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Edit Details</MudText>
+
+                <CustomerForm @ref="form" Model="model" />
+
+                @if (State.Error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">@State.Error</MudAlert>
+                }
+
+                <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-6">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               OnClick="ConfirmDeleteAsync">
+                        Delete Customer
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="SaveAsync"
+                               Disabled="State.IsSaving">
+                        @if (State.IsSaving)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Save Changes</span>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
 
 @code {
+    [Parameter] public Guid Id { get; set; }
 
+    private CustomerForm form = null!;
+    private CustomerFormModel model = new();
+    private CustomerDto? customer;
+    private CancellationTokenSource cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        State.OnChange += StateHasChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        await State.LoadCustomer(Id, cts.Token);
+        customer = State.SelectedCustomer;
+        if (customer is not null)
+            model = CustomerFormModel.FromDto(customer);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var success = await State.UpdateCustomer(model.ToUpdateRequest(Id), cts.Token);
+        if (success)
+        {
+            Snackbar.Add("Customer updated successfully.", Severity.Success);
+            await LoadAsync();
+        }
+        else
+        {
+            Snackbar.Add(State.Error ?? "Failed to update customer.", Severity.Error);
+        }
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete Customer",
+            ["Message"] = $"Are you sure you want to delete {customer?.FirstName} {customer?.LastName}? This cannot be undone and will fail if they have active bookings.",
+            ["ConfirmText"] = "Delete"
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Customer", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            var success = await State.DeleteCustomer(Id, cts.Token);
+            if (success)
+            {
+                Snackbar.Add("Customer deleted.", Severity.Success);
+                Nav.NavigateTo("/customers");
+            }
+            else
+            {
+                Snackbar.Add(State.Error ?? "Failed to delete customer.", Severity.Error);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

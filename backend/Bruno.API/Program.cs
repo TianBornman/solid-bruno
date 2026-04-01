@@ -17,6 +17,16 @@ namespace Bruno.API
 			builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 			builder.Services.AddProblemDetails();
 
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("BlazorClient", policy =>
+					policy.WithOrigins(
+						"https://localhost:7037",
+						"http://localhost:5188")
+					.AllowAnyHeader()
+					.AllowAnyMethod());
+			});
+
 			builder.Services.AddControllers();
 
 			builder.Services.AddOpenApi();
@@ -37,6 +47,7 @@ namespace Bruno.API
 
 			app.UseExceptionHandler();
 			app.UseHttpsRedirection();
+			app.UseCors("BlazorClient");
 
 			app.UseAuthorization();
 
