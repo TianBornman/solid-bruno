@@ -1,5 +1,9 @@
 using Bruno.Features.Customer.Api;
 using Bruno.Features.Customer.State;
+using Bruno.Features.Booking.Api;
+using Bruno.Features.Booking.State;
+using Bruno.Features.Vehicle.Api;
+using Bruno.Features.Vehicle.State;
 using Bruno.Shared.Api;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -32,6 +36,10 @@ namespace Bruno
 			builder.Services.AddScoped<IApiClient, ApiClient>();
 			builder.Services.AddScoped<ICustomerApi, CustomerApi>();
 			builder.Services.AddScoped<CustomerState>();
+			builder.Services.AddScoped<IVehicleApi, VehicleApi>();
+			builder.Services.AddScoped<VehicleState>();
+			builder.Services.AddScoped<IBookingApi, BookingApi>();
+			builder.Services.AddScoped<BookingState>();
 
 			builder.Services.AddMudServices();
 

@@ -1,5 +1,154 @@
-﻿<h3>Booking Form</h3>
+<MudForm @ref="form">
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6">
+            <MudSelect T="Guid"
+                       Value="Model.CustomerId"
+                       ValueChanged="OnCustomerChanged"
+                       Label="Customer"
+                       Required="true"
+                       RequiredError="Please select a customer."
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var c in Customers)
+                {
+                    <MudSelectItem T="Guid" Value="c.Id">
+                        @c.FirstName @c.LastName — @c.Email
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="Guid"
+                       Value="Model.VehicleId"
+                       ValueChanged="OnVehicleChanged"
+                       Label="Vehicle"
+                       Required="true"
+                       RequiredError="Please select a vehicle."
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var v in AvailableVehicles)
+                {
+                    <MudSelectItem T="Guid" Value="v.Id">
+                        @v.RegistrationNumber — @v.Year @v.Make @v.Model (£@v.DailyRate.ToString("F2")/day)
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudDatePicker @bind-Date="StartDate"
+                           Label="Start Date"
+                           Required="true"
+                           MinDate="@(IsEditMode ? null : DateTime.Today)"
+                           DateFormat="dd/MM/yyyy" />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudDatePicker @bind-Date="EndDate"
+                           Label="End Date"
+                           Required="true"
+                           MinDate="@(IsEditMode ? null : DateTime.Today.AddDays(1))"
+                           DateFormat="dd/MM/yyyy" />
+        </MudItem>
+
+        @if (Model.Days > 0)
+        {
+            <MudItem xs="12">
+                <MudAlert Severity="Severity.Info" Dense="true">
+                    Duration: <strong>@Model.Days day(s)</strong>
+                    @if (selectedVehicle is not null)
+                    {
+                        <span> &times; <strong>£@selectedVehicle.DailyRate.ToString("F2")/day</strong> = <strong>£@((Model.Days * selectedVehicle.DailyRate).ToString("F2"))</strong></span>
+                    }
+                </MudAlert>
+            </MudItem>
+        }
+
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal"
+                             @bind-Value="Model.TotalPrice"
+                             Label="Total Price (£)"
+                             Required="true"
+                             RequiredError="Total price is required."
+                             Min="0.01m"
+                             Format="F2"
+                             Adornment="Adornment.Start"
+                             AdornmentText="£"
+                             HelperText="Auto-calculated from vehicle rate and duration. Editable." />
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="BookingStatus"
+                       @bind-Value="Model.Status"
+                       Label="Status"
+                       Required="true">
+                <MudSelectItem T="BookingStatus" Value="BookingStatus.Active">Active</MudSelectItem>
+                <MudSelectItem T="BookingStatus" Value="BookingStatus.Completed">Completed</MudSelectItem>
+                <MudSelectItem T="BookingStatus" Value="BookingStatus.Cancelled">Cancelled</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@if (dateError is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mt-3" Dense="true">@dateError</MudAlert>
+}
 
 @code {
+    [Parameter, EditorRequired] public BookingFormModel Model { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<CustomerDto> Customers { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyList<VehicleDto> Vehicles { get; set; } = [];
+    [Parameter] public bool IsEditMode { get; set; }
 
+    private MudForm form = null!;
+    private VehicleDto? selectedVehicle;
+    private string? dateError;
+
+    private IEnumerable<VehicleDto> AvailableVehicles => Vehicles.Where(v => !v.IsDeleted);
+
+    private DateTime? StartDate
+    {
+        get => Model.StartDate;
+        set { Model.StartDate = value; dateError = null; RecalculateTotalPrice(); }
+    }
+
+    private DateTime? EndDate
+    {
+        get => Model.EndDate;
+        set { Model.EndDate = value; dateError = null; RecalculateTotalPrice(); }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (selectedVehicle is null && Model.VehicleId != Guid.Empty)
+            selectedVehicle = Vehicles.FirstOrDefault(v => v.Id == Model.VehicleId);
+    }
+
+    public async Task<bool> ValidateAsync()
+    {
+        await form.ValidateAsync();
+
+        dateError = null;
+        if (Model.StartDate.HasValue && Model.EndDate.HasValue && Model.EndDate <= Model.StartDate)
+            dateError = "End date must be after start date.";
+
+        return form.IsValid && dateError is null;
+    }
+
+    private void OnCustomerChanged(Guid id) => Model.CustomerId = id;
+
+    private void OnVehicleChanged(Guid id)
+    {
+        Model.VehicleId = id;
+        selectedVehicle = Vehicles.FirstOrDefault(v => v.Id == id);
+        RecalculateTotalPrice();
+    }
+
+    private void RecalculateTotalPrice()
+    {
+        if (selectedVehicle is null || !Model.StartDate.HasValue || !Model.EndDate.HasValue) return;
+        var days = (int)(Model.EndDate.Value - Model.StartDate.Value).TotalDays;
+        if (days > 0)
+            Model.TotalPrice = selectedVehicle.DailyRate * days;
+    }
 }

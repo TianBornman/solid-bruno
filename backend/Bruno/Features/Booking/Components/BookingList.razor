@@ -1,5 +1,99 @@
-﻿<h3>VehicleList</h3>
+<MudTable T="BookingDto"
+          Items="Bookings"
+          Hover="true"
+          Striped="true"
+          Elevation="2"
+          SortLabel="Sort By">
+    <HeaderContent>
+        <MudTh>Ref</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<BookingDto, object>(x => GetCustomerName(x.CustomerId))">Customer</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<BookingDto, object>(x => GetVehicleLabel(x.VehicleId))">Vehicle</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<BookingDto, object>(x => x.StartDate)">Start</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<BookingDto, object>(x => x.EndDate)">End</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Days</MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<BookingDto, object>(x => x.TotalPrice)">Total</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh Style="width:100px">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Ref">
+            <MudText Typo="Typo.caption">@context.Id.ToString().ToUpperInvariant()</MudText>
+        </MudTd>
+        <MudTd DataLabel="Customer">@GetCustomerName(context.CustomerId)</MudTd>
+        <MudTd DataLabel="Vehicle">@GetVehicleLabel(context.VehicleId)</MudTd>
+        <MudTd DataLabel="Start">@context.StartDate.ToString("dd MMM yyyy")</MudTd>
+        <MudTd DataLabel="End">@context.EndDate.ToString("dd MMM yyyy")</MudTd>
+        <MudTd DataLabel="Days">@((int)(context.EndDate - context.StartDate).TotalDays)</MudTd>
+        <MudTd DataLabel="Total">@context.TotalPrice.ToString("C")</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string" Size="Size.Small" Color="GetStatusColor(context.Status)" Variant="Variant.Filled">
+                @context.Status
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudStack Row="true" Spacing="0">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               OnClick="@(() => OnView.InvokeAsync(context.Id))" />
+                @if (CanDelete(context))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => OnDelete.InvokeAsync(context))" />
+                }
+            </MudStack>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudStack AlignItems="AlignItems.Center" Class="pa-8">
+            <MudIcon Icon="@Icons.Material.Filled.BookOnline" Size="Size.Large" Color="Color.Default" />
+            <MudText Typo="Typo.body1" Color="Color.Secondary">No bookings found.</MudText>
+        </MudStack>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+    </PagerContent>
+</MudTable>
 
 @code {
+    [Parameter, EditorRequired] public IReadOnlyList<BookingDto> Bookings { get; set; } = [];
+    [Parameter] public IReadOnlyList<CustomerDto> Customers { get; set; } = [];
+    [Parameter] public IReadOnlyList<VehicleDto> Vehicles { get; set; } = [];
+    [Parameter] public EventCallback<Guid> OnView { get; set; }
+    [Parameter] public EventCallback<BookingDto> OnDelete { get; set; }
 
+    private string GetCustomerName(Guid id)
+    {
+        var c = Customers.FirstOrDefault(x => x.Id == id);
+        return c is null ? id.ToString() : $"{c.FirstName} {c.LastName}";
+    }
+
+    private string GetVehicleLabel(Guid id)
+    {
+        var v = Vehicles.FirstOrDefault(x => x.Id == id);
+        return v is null ? id.ToString() : $"{v.RegistrationNumber} – {v.Make} {v.Model}";
+    }
+
+    private static Color GetStatusColor(BookingStatus status) => status switch
+    {
+        BookingStatus.Active    => Color.Success,
+        BookingStatus.Completed => Color.Info,
+        BookingStatus.Cancelled => Color.Warning,
+        _                       => Color.Default
+    };
+
+    private static bool CanDelete(BookingDto b) =>
+        b.Status == BookingStatus.Active && b.StartDate.Date > DateTime.Today;
 }

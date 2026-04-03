@@ -1,5 +1,71 @@
-﻿<h3>VehicleList</h3>
+<MudTable T="VehicleDto"
+          Items="Vehicles"
+          Hover="true"
+          Striped="true"
+          Elevation="2"
+          SortLabel="Sort By">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<VehicleDto, object>(x => x.RegistrationNumber)">Registration</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<VehicleDto, object>(x => x.Make)">Make &amp; Model</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<VehicleDto, object>(x => x.Year)">Year</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<VehicleDto, object>(x => x.DailyRate)">Daily Rate</MudTableSortLabel>
+        </MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh Style="width:120px">Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Registration">
+            <MudText Typo="Typo.body1"><strong>@context.RegistrationNumber</strong></MudText>
+        </MudTd>
+        <MudTd DataLabel="Make & Model">@context.Make @context.Model</MudTd>
+        <MudTd DataLabel="Year">@context.Year</MudTd>
+        <MudTd DataLabel="Daily Rate">@context.DailyRate.ToString("C")</MudTd>
+        <MudTd DataLabel="Status">
+            @if (context.IsDeleted)
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">Deleted</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+            }
+        </MudTd>
+        <MudTd>
+            <MudStack Row="true" Spacing="0">
+                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               OnClick="@(() => OnView.InvokeAsync(context.Id))" />
+                @if (!context.IsDeleted)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Error"
+                                   OnClick="@(() => OnDelete.InvokeAsync(context))" />
+                }
+            </MudStack>
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudStack AlignItems="AlignItems.Center" Class="pa-8">
+            <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Large" Color="Color.Default" />
+            <MudText Typo="Typo.body1" Color="Color.Secondary">No vehicles found.</MudText>
+        </MudStack>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+    </PagerContent>
+</MudTable>
 
 @code {
-
+    [Parameter, EditorRequired] public IReadOnlyList<VehicleDto> Vehicles { get; set; } = [];
+    [Parameter] public EventCallback<Guid> OnView { get; set; }
+    [Parameter] public EventCallback<VehicleDto> OnDelete { get; set; }
 }

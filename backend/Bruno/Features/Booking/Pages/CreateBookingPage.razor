@@ -1,5 +1,98 @@
-﻿<h3>Create Booking Page</h3>
+@page "/bookings/create"
+@inject BookingState State
+@inject CustomerState CustomerState
+@inject VehicleState VehicleState
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>New Booking – Bruno Vehicle Hire</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Nav.NavigateTo("/bookings"))" />
+    <MudText Typo="Typo.h4">New Booking</MudText>
+</MudStack>
+
+@if (CustomerState.IsLoading || VehicleState.IsLoading)
+{
+    <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Class="mb-4" />
+}
+else
+{
+    <MudPaper Class="pa-6" Elevation="2">
+        <BookingForm @ref="form"
+                     Model="model"
+                     Customers="CustomerState.Customers"
+                     Vehicles="VehicleState.Vehicles" />
+
+        @if (State.Error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@State.Error</MudAlert>
+        }
+
+        <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-6" Spacing="2">
+            <MudButton Variant="Variant.Text"
+                       OnClick="@(() => Nav.NavigateTo("/bookings"))">
+                Cancel
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Tertiary"
+                       StartIcon="@Icons.Material.Filled.Save"
+                       OnClick="SaveAsync"
+                       Disabled="State.IsSaving">
+                @if (State.IsSaving)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    <span>Saving...</span>
+                }
+                else
+                {
+                    <span>Create Booking</span>
+                }
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+}
 
 @code {
+    private BookingForm form = null!;
+    private readonly BookingFormModel model = new();
+    private CancellationTokenSource cts = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        State.OnChange += StateHasChanged;
+        CustomerState.OnChange += StateHasChanged;
+        VehicleState.OnChange += StateHasChanged;
+
+        await Task.WhenAll(
+            CustomerState.LoadCustomers(cts.Token),
+            VehicleState.LoadVehicles(cts.Token));
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var id = await State.CreateBooking(model.ToCreateRequest(), cts.Token);
+        if (id.HasValue)
+        {
+            Snackbar.Add("Booking created successfully.", Severity.Success);
+            Nav.NavigateTo($"/bookings/{id.Value}");
+        }
+        else
+        {
+            Snackbar.Add(State.Error ?? "Failed to create booking.", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        CustomerState.OnChange -= StateHasChanged;
+        VehicleState.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

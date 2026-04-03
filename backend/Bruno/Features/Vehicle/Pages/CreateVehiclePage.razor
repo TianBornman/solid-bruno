@@ -1,5 +1,78 @@
-﻿<h3>Create Vehicle Page</h3>
+@page "/vehicles/create"
+@inject VehicleState State
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>Add Vehicle – Bruno Vehicle Hire</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Nav.NavigateTo("/vehicles"))" />
+    <MudText Typo="Typo.h4">Add Vehicle</MudText>
+</MudStack>
+
+<MudPaper Class="pa-6" Elevation="2">
+    <VehicleForm @ref="form" Model="model" />
+
+    @if (State.Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mt-4">@State.Error</MudAlert>
+    }
+
+    <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-6" Spacing="2">
+        <MudButton Variant="Variant.Text"
+                   OnClick="@(() => Nav.NavigateTo("/vehicles"))">
+            Cancel
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Secondary"
+                   StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="SaveAsync"
+                   Disabled="State.IsSaving">
+            @if (State.IsSaving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Add Vehicle</span>
+            }
+        </MudButton>
+    </MudStack>
+</MudPaper>
 
 @code {
+    private VehicleForm form = null!;
+    private readonly VehicleFormModel model = new();
+    private CancellationTokenSource cts = new();
 
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var id = await State.CreateVehicle(model.ToCreateRequest(), cts.Token);
+        if (id.HasValue)
+        {
+            Snackbar.Add("Vehicle added successfully.", Severity.Success);
+            Nav.NavigateTo($"/vehicles/{id.Value}");
+        }
+        else
+        {
+            Snackbar.Add(State.Error ?? "Failed to add vehicle.", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

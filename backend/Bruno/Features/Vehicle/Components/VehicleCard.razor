@@ -1,5 +1,39 @@
-﻿<h3>VehicleCard</h3>
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderAvatar>
+            <MudAvatar Color="@(Vehicle.IsDeleted ? Color.Default : Color.Secondary)" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" />
+            </MudAvatar>
+        </CardHeaderAvatar>
+        <CardHeaderContent>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudText Typo="Typo.h6">@Vehicle.RegistrationNumber</MudText>
+                @if (Vehicle.IsDeleted)
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">Deleted</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">Active</MudChip>
+                }
+            </MudStack>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@Vehicle.Year @Vehicle.Make @Vehicle.Model</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2"><strong>@Vehicle.DailyRate.ToString("C")</strong> per day</MudText>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">Added @Vehicle.CreatedDate.ToString("MMMM yyyy")</MudText>
+            </MudStack>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
 
 @code {
-
+    [Parameter, EditorRequired] public VehicleDto Vehicle { get; set; } = null!;
 }

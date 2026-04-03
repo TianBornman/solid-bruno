@@ -1,7 +1,136 @@
-﻿@page "/bookings"
+@page "/bookings"
+@inject BookingState State
+@inject CustomerState CustomerState
+@inject VehicleState VehicleState
+@inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@implements IDisposable
 
-<h3>Booking Page</h3>
+<PageTitle>Bookings – Bruno Vehicle Hire</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+    <MudText Typo="Typo.h4">Bookings</MudText>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Tertiary"
+               StartIcon="@Icons.Material.Filled.BookOnline"
+               OnClick="@(() => Nav.NavigateTo("/bookings/create"))">
+        New Booking
+    </MudButton>
+</MudStack>
+
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
+        <MudTextField @bind-Value="searchTerm"
+                      Placeholder="Search by customer or vehicle..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Clearable="true"
+                      Class="flex-grow-1" />
+        <MudSelect T="BookingStatus?"
+                   @bind-Value="statusFilter"
+                   Label="Status"
+                   Style="min-width:160px"
+                   AnchorOrigin="Origin.BottomCenter">
+            <MudSelectItem T="BookingStatus?" Value="null">All</MudSelectItem>
+            <MudSelectItem T="BookingStatus?" Value="BookingStatus.Active">Active</MudSelectItem>
+            <MudSelectItem T="BookingStatus?" Value="BookingStatus.Completed">Completed</MudSelectItem>
+            <MudSelectItem T="BookingStatus?" Value="BookingStatus.Cancelled">Cancelled</MudSelectItem>
+        </MudSelect>
+    </MudStack>
+</MudPaper>
+
+@if (State.IsLoading)
+{
+    <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Class="mb-4" />
+}
+else if (State.Error is not null)
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">@State.Error</MudAlert>
+}
+else
+{
+    <BookingList Bookings="FilteredBookings"
+                 Customers="CustomerState.Customers"
+                 Vehicles="VehicleState.Vehicles"
+                 OnView="@(id => Nav.NavigateTo($"/bookings/{id}"))"
+                 OnDelete="ConfirmDeleteAsync" />
+}
 
 @code {
+    private string searchTerm = string.Empty;
+    private BookingStatus? statusFilter = null;
+    private CancellationTokenSource cts = new();
 
+    private IReadOnlyList<BookingDto> FilteredBookings
+    {
+        get
+        {
+            var bookings = State.Bookings.AsEnumerable();
+
+            if (statusFilter.HasValue)
+                bookings = bookings.Where(b => b.Status == statusFilter.Value);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+                bookings = bookings.Where(b =>
+                    GetCustomerName(b.CustomerId).Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    GetVehicleLabel(b.VehicleId).Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+            return bookings.ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        State.OnChange += StateHasChanged;
+        CustomerState.OnChange += StateHasChanged;
+        VehicleState.OnChange += StateHasChanged;
+
+        await Task.WhenAll(
+            State.LoadBookings(cts.Token),
+            CustomerState.LoadCustomers(cts.Token),
+            VehicleState.LoadVehicles(cts.Token));
+    }
+
+    private string GetCustomerName(Guid id)
+    {
+        var c = CustomerState.Customers.FirstOrDefault(x => x.Id == id);
+        return c is null ? id.ToString() : $"{c.FirstName} {c.LastName}";
+    }
+
+    private string GetVehicleLabel(Guid id)
+    {
+        var v = VehicleState.Vehicles.FirstOrDefault(x => x.Id == id);
+        return v is null ? id.ToString() : $"{v.RegistrationNumber} – {v.Make} {v.Model}";
+    }
+
+    private async Task ConfirmDeleteAsync(BookingDto booking)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete Booking",
+            ["Message"] = $"Are you sure you want to delete this booking ({GetCustomerName(booking.CustomerId)} / {GetVehicleLabel(booking.VehicleId)}, {booking.StartDate:dd MMM yyyy}–{booking.EndDate:dd MMM yyyy})? This cannot be undone.",
+            ["ConfirmText"] = "Delete"
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Booking", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            var success = await State.DeleteBooking(booking.Id, cts.Token);
+            Snackbar.Add(
+                success ? "Booking deleted." : (State.Error ?? "Failed to delete booking."),
+                success ? Severity.Success : Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        CustomerState.OnChange -= StateHasChanged;
+        VehicleState.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

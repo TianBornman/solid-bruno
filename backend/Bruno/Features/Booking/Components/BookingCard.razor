@@ -1,5 +1,55 @@
-﻿<h3>Booking Card</h3>
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderAvatar>
+            <MudAvatar Color="StatusColor" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.BookOnline" />
+            </MudAvatar>
+        </CardHeaderAvatar>
+        <CardHeaderContent>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudText Typo="Typo.h6">Ref: @Booking.Id.ToString()[..8].ToUpperInvariant()</MudText>
+                <MudChip T="string" Size="Size.Small" Color="StatusColor" Variant="Variant.Filled">@Booking.Status</MudChip>
+            </MudStack>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Created @Booking.CreatedDate.ToString("dd MMM yyyy")</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudStack Spacing="2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">@CustomerName</MudText>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.DirectionsCar" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">@VehicleLabel</MudText>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.DateRange" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2">
+                    @Booking.StartDate.ToString("dd MMM yyyy") – @Booking.EndDate.ToString("dd MMM yyyy")
+                    (@Days days)
+                </MudText>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Secondary" />
+                <MudText Typo="Typo.body2"><strong>@Booking.TotalPrice.ToString("C")</strong> total</MudText>
+            </MudStack>
+        </MudStack>
+    </MudCardContent>
+</MudCard>
 
 @code {
+    [Parameter, EditorRequired] public BookingDto Booking { get; set; } = null!;
+    [Parameter] public string CustomerName { get; set; } = "Unknown Customer";
+    [Parameter] public string VehicleLabel { get; set; } = "Unknown Vehicle";
 
+    private int Days => (int)(Booking.EndDate - Booking.StartDate).TotalDays;
+
+    private Color StatusColor => Booking.Status switch
+    {
+        BookingStatus.Active    => Color.Success,
+        BookingStatus.Completed => Color.Info,
+        BookingStatus.Cancelled => Color.Warning,
+        _                       => Color.Default
+    };
 }

@@ -1,5 +1,68 @@
-﻿<h3>VehicleForm</h3>
+<MudForm @ref="form">
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.RegistrationNumber"
+                          Label="Registration Number"
+                          Required="true"
+                          RequiredError="Registration number is required."
+                          MaxLength="8"
+                          Immediate="true"
+                          HelperText="Max 8 characters, e.g. AB12 CDE" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="int"
+                             @bind-Value="Model.Year"
+                             Label="Year"
+                             Required="true"
+                             RequiredError="Year is required."
+                             Min="1886"
+                             Max="@(DateTime.Now.Year + 1)"
+                             Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.Make"
+                          Label="Make"
+                          Required="true"
+                          RequiredError="Make is required."
+                          MaxLength="50"
+                          Immediate="true"
+                          HelperText="e.g. Ford, Toyota, BMW" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField T="string"
+                          @bind-Value="Model.Model"
+                          Label="Model"
+                          Required="true"
+                          RequiredError="Model is required."
+                          MaxLength="50"
+                          Immediate="true"
+                          HelperText="e.g. Focus, Corolla, 3 Series" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudNumericField T="decimal"
+                             @bind-Value="Model.DailyRate"
+                             Label="Daily Rate (£)"
+                             Required="true"
+                             RequiredError="Daily rate is required."
+                             Min="0.01m"
+                             Format="F2"
+                             Immediate="true"
+                             Adornment="Adornment.Start"
+                             AdornmentText="£" />
+        </MudItem>
+    </MudGrid>
+</MudForm>
 
 @code {
+    [Parameter, EditorRequired] public VehicleFormModel Model { get; set; } = null!;
 
+    private MudForm form = null!;
+
+    public async Task<bool> ValidateAsync()
+    {
+        await form.ValidateAsync();
+        return form.IsValid;
+    }
 }

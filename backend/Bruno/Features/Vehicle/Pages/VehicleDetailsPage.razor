@@ -1,5 +1,155 @@
-﻿<h3>Vehicle Details Page</h3>
+@page "/vehicles/{Id:guid}"
+@inject VehicleState State
+@inject NavigationManager Nav
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>
+    @(vehicle is null ? "Vehicle" : vehicle.RegistrationNumber) – Bruno Vehicle Hire
+</PageTitle>
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4" Spacing="2">
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="@(() => Nav.NavigateTo("/vehicles"))" />
+    <MudText Typo="Typo.h4">Vehicle Details</MudText>
+</MudStack>
+
+@if (State.IsLoading)
+{
+    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" />
+}
+else if (vehicle is null)
+{
+    <MudAlert Severity="Severity.Error">@(State.Error ?? "Vehicle not found.")</MudAlert>
+}
+else
+{
+    <MudGrid Spacing="4">
+        <MudItem xs="12" md="4">
+            <VehicleCard Vehicle="vehicle" />
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Edit Details</MudText>
+
+                @if (vehicle.IsDeleted)
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mb-4">
+                        This vehicle has been soft-deleted and is no longer available for booking. Details are read-only.
+                    </MudAlert>
+                }
+
+                <MudStack Class="@(vehicle.IsDeleted ? "mud-disabled" : "")">
+                    <VehicleForm @ref="form" Model="model" />
+                </MudStack>
+
+                @if (State.Error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">@State.Error</MudAlert>
+                }
+
+                @if (!vehicle.IsDeleted)
+                {
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-6">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="ConfirmDeleteAsync">
+                            Delete Vehicle
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   OnClick="SaveAsync"
+                                   Disabled="State.IsSaving">
+                            @if (State.IsSaving)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Saving...</span>
+                            }
+                            else
+                            {
+                                <span>Save Changes</span>
+                            }
+                        </MudButton>
+                    </MudStack>
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
 
 @code {
+    [Parameter] public Guid Id { get; set; }
 
+    private VehicleForm form = null!;
+    private VehicleFormModel model = new();
+    private VehicleDto? vehicle;
+    private CancellationTokenSource cts = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        State.OnChange += StateHasChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        await State.LoadVehicle(Id, cts.Token);
+        vehicle = State.SelectedVehicle;
+        if (vehicle is not null)
+            model = VehicleFormModel.FromDto(vehicle);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!await form.ValidateAsync()) return;
+
+        var success = await State.UpdateVehicle(model.ToUpdateRequest(Id), cts.Token);
+        if (success)
+        {
+            Snackbar.Add("Vehicle updated successfully.", Severity.Success);
+            await LoadAsync();
+        }
+        else
+        {
+            Snackbar.Add(State.Error ?? "Failed to update vehicle.", Severity.Error);
+        }
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        var parameters = new DialogParameters
+        {
+            ["Title"] = "Delete Vehicle",
+            ["Message"] = $"Are you sure you want to soft-delete {vehicle?.Year} {vehicle?.Make} {vehicle?.Model} ({vehicle?.RegistrationNumber})? It will no longer be available for booking.",
+            ["ConfirmText"] = "Delete"
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Vehicle", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            var success = await State.DeleteVehicle(Id, cts.Token);
+            if (success)
+            {
+                Snackbar.Add("Vehicle deleted.", Severity.Success);
+                Nav.NavigateTo("/vehicles");
+            }
+            else
+            {
+                Snackbar.Add(State.Error ?? "Failed to delete vehicle.", Severity.Error);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        cts.Cancel();
+        cts.Dispose();
+    }
 }

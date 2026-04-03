@@ -1,5 +1,10 @@
-﻿namespace Bruno.Features.Booking.Models;
+namespace Bruno.Features.Booking.Models;
 
-public class BookingDto
-{
-}
+public record BookingDto(Guid Id,
+                    DateTime StartDate,
+                    DateTime EndDate,
+                    decimal TotalPrice,
+                    BookingStatus Status,
+                    Guid VehicleId,
+                    Guid CustomerId,
+                    DateTime CreatedDate);
