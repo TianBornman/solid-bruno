@@ -10,40 +10,40 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using System.Net.Http.Headers;
 
-namespace Bruno
+namespace Bruno;
+
+public class Program
 {
-	public class Program
+	public static async Task Main(string[] args)
 	{
-		public static async Task Main(string[] args)
+		var builder = WebAssemblyHostBuilder.CreateDefault(args);
+		builder.RootComponents.Add<App>("#app");
+		builder.RootComponents.Add<HeadOutlet>("head::after");
+
+		builder.Services.AddHttpClient("Api", client =>
 		{
-			var builder = WebAssemblyHostBuilder.CreateDefault(args);
-			builder.RootComponents.Add<App>("#app");
-			builder.RootComponents.Add<HeadOutlet>("head::after");
+			client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"]!);
+			client.DefaultRequestHeaders.Accept.Add(
+				new MediaTypeWithQualityHeaderValue("application/json"));
+			client.DefaultRequestHeaders.Add("X-Api-Key", builder.Configuration["ApiKey"]);
+		});
 
-			builder.Services.AddHttpClient("Api", client =>
-			{
-				client.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"]!);
-				client.DefaultRequestHeaders.Accept.Add(
-					new MediaTypeWithQualityHeaderValue("application/json"));
-			});
+		builder.Services.AddScoped(sp =>
+		{
+			var factory = sp.GetRequiredService<IHttpClientFactory>();
+			return factory.CreateClient("Api");
+		});
 
-			builder.Services.AddScoped(sp =>
-			{
-				var factory = sp.GetRequiredService<IHttpClientFactory>();
-				return factory.CreateClient("Api");
-			});
+		builder.Services.AddScoped<IApiClient, ApiClient>();
+		builder.Services.AddScoped<ICustomerApi, CustomerApi>();
+		builder.Services.AddScoped<CustomerState>();
+		builder.Services.AddScoped<IVehicleApi, VehicleApi>();
+		builder.Services.AddScoped<VehicleState>();
+		builder.Services.AddScoped<IBookingApi, BookingApi>();
+		builder.Services.AddScoped<BookingState>();
 
-			builder.Services.AddScoped<IApiClient, ApiClient>();
-			builder.Services.AddScoped<ICustomerApi, CustomerApi>();
-			builder.Services.AddScoped<CustomerState>();
-			builder.Services.AddScoped<IVehicleApi, VehicleApi>();
-			builder.Services.AddScoped<VehicleState>();
-			builder.Services.AddScoped<IBookingApi, BookingApi>();
-			builder.Services.AddScoped<BookingState>();
+		builder.Services.AddMudServices();
 
-			builder.Services.AddMudServices();
-
-			await builder.Build().RunAsync();
-		}
+		await builder.Build().RunAsync();
 	}
 }

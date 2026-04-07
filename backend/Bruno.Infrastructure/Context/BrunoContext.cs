@@ -1,4 +1,4 @@
-﻿using Bruno.Domain.Entities;
+using Bruno.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bruno.Infrastructure.Context;
@@ -16,6 +16,9 @@ public class BrunoContext : DbContext
 		base.OnModelCreating(modelBuilder);
 
 		modelBuilder.Entity<Vehicle>().HasQueryFilter(v => !v.IsDeleted);
+		modelBuilder.Entity<Vehicle>().HasIndex(v => v.RegistrationNumber).IsUnique();
+
+		modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
 
 		modelBuilder.Entity<Booking>(entity =>
 		{
