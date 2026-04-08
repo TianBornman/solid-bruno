@@ -1,6 +1,5 @@
 using Bruno.Features.Vehicle.Api;
 using Bruno.Features.Vehicle.Models;
-using Bruno.Shared.Models;
 
 namespace Bruno.Features.Vehicle.State;
 
@@ -26,7 +25,7 @@ public class VehicleState
         SetLoading(true);
         try
         {
-            Vehicles = await api.GetVehicles(new ListRequest(0, 100), ct);
+            Vehicles = await api.GetVehicles(new ListVehicleRequest(0, 100, null), ct);
         }
         catch (Exception ex)
         {

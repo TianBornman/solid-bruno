@@ -1,5 +1,5 @@
 @page "/bookings"
-@inject BookingState State
+@inject IBookingApi Api
 @inject CustomerState CustomerState
 @inject VehicleState VehicleState
 @inject NavigationManager Nav
@@ -25,9 +25,9 @@
                       Placeholder="Search by customer or vehicle..."
                       Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search"
-                      Immediate="true"
                       Clearable="true"
-                      Class="flex-grow-1" />
+                      Class="flex-grow-1"
+                      DebounceInterval="300" />
         <MudSelect T="BookingStatus?"
                    @bind-Value="statusFilter"
                    Label="Status"
@@ -41,54 +41,26 @@
     </MudStack>
 </MudPaper>
 
-@if (State.IsLoading)
-{
-    <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" Class="mb-4" />
-}
-else if (State.Error is not null)
-{
-    <MudAlert Severity="Severity.Error" Class="mb-4">@State.Error</MudAlert>
-}
-else
-{
-    <BookingList Bookings="FilteredBookings"
-                 Customers="CustomerState.Customers"
-                 Vehicles="VehicleState.Vehicles"
-                 OnView="@(id => Nav.NavigateTo($"/bookings/{id}"))"
-                 OnDelete="ConfirmDeleteAsync" />
-}
+<BookingList @ref="list"
+             StatusFilter="statusFilter"
+             Search="@(string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm)"
+             Customers="CustomerState.Customers"
+             Vehicles="VehicleState.Vehicles"
+             OnView="@(id => Nav.NavigateTo($"/bookings/{id}"))"
+             OnDelete="ConfirmDeleteAsync" />
 
 @code {
+    private BookingList list = null!;
     private string searchTerm = string.Empty;
-    private BookingStatus? statusFilter = null;
+    private BookingStatus? statusFilter;
     private CancellationTokenSource cts = new();
-
-    private IReadOnlyList<BookingDto> FilteredBookings
-    {
-        get
-        {
-            var bookings = State.Bookings.AsEnumerable();
-
-            if (statusFilter.HasValue)
-                bookings = bookings.Where(b => b.Status == statusFilter.Value);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-                bookings = bookings.Where(b =>
-                    GetCustomerName(b.CustomerId).Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    GetVehicleLabel(b.VehicleId).Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
-
-            return bookings.ToList();
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        State.OnChange += StateHasChanged;
         CustomerState.OnChange += StateHasChanged;
         VehicleState.OnChange += StateHasChanged;
 
         await Task.WhenAll(
-            State.LoadBookings(cts.Token),
             CustomerState.LoadCustomers(cts.Token),
             VehicleState.LoadVehicles(cts.Token));
     }
@@ -118,16 +90,21 @@ else
 
         if (result is { Canceled: false })
         {
-            var success = await State.DeleteBooking(booking.Id, cts.Token);
-            Snackbar.Add(
-                success ? "Booking deleted." : (State.Error ?? "Failed to delete booking."),
-                success ? Severity.Success : Severity.Error);
+            try
+            {
+                await Api.DeleteBooking(booking.Id, cts.Token);
+                Snackbar.Add("Booking deleted.", Severity.Success);
+                await list.ReloadAsync();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
         }
     }
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
         CustomerState.OnChange -= StateHasChanged;
         VehicleState.OnChange -= StateHasChanged;
         cts.Cancel();

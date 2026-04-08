@@ -1,5 +1,4 @@
-﻿using Bruno.Application.DTOs.Customer;
-using Bruno.Application.DTOs.Vehicle;
+using Bruno.Application.DTOs.Customer;
 using Bruno.Domain.Repositories;
 using MediatR;
 
@@ -16,12 +15,9 @@ public class ListCustomerQueryHandler : IRequestHandler<ListCustomerQuery, List<
 
 	public async Task<List<GetCustomerDto>> Handle(ListCustomerQuery request, CancellationToken cancellationToken)
 	{
-		var entities = await uow.CustomerRepository.List(request.Skip, request.Take) 
-			?? throw new Exception("No customers found.");
+		var entities = await uow.CustomerRepository.ListFiltered(request.Skip, request.Take, request.Search);
 
-		var dtos = entities.Select(entity => new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName, 
+		return entities.Select(entity => new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName,
 									entity.Email, entity.PhoneNumber, entity.CreatedAt)).ToList();
-
-		return dtos;
 	}
 }

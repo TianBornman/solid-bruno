@@ -1,4 +1,4 @@
-﻿using Bruno.Domain.Entities;
+using Bruno.Domain.Entities;
 using Bruno.Domain.Repositories;
 using Bruno.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -42,5 +42,21 @@ public class VehicleRepository : IVehicleRepository
 	public async Task<IEnumerable<Vehicle>> List(int skip, int take)
 	{
 		return await dbContext.Vehicles.Skip(skip).Take(take).ToListAsync();
+	}
+
+	public async Task<IEnumerable<Vehicle>> ListFiltered(int skip, int take, string? search)
+	{
+		var query = dbContext.Vehicles.AsQueryable();
+
+		if (!string.IsNullOrWhiteSpace(search))
+		{
+			var term = search.ToLower();
+			query = query.Where(v =>
+				v.RegistrationNumber.ToLower().Contains(term) ||
+				v.Make.ToLower().Contains(term) ||
+				v.Model.ToLower().Contains(term));
+		}
+
+		return await query.Skip(skip).Take(take).ToListAsync();
 	}
 }

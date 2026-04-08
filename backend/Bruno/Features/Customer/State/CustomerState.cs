@@ -1,6 +1,5 @@
 using Bruno.Features.Customer.Api;
 using Bruno.Features.Customer.Models;
-using Bruno.Shared.Models;
 
 namespace Bruno.Features.Customer.State;
 
@@ -26,7 +25,7 @@ public class CustomerState
         SetLoading(true);
         try
         {
-            Customers = await _api.GetCustomers(new ListRequest(0, 100), ct);
+            Customers = await _api.GetCustomers(new ListCustomerRequest(0, 100, null), ct);
         }
         catch (Exception ex)
         {

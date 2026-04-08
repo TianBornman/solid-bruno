@@ -1,5 +1,5 @@
 @page "/customers"
-@inject CustomerState State
+@inject ICustomerApi Api
 @inject NavigationManager Nav
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -22,46 +22,20 @@
                   Placeholder="Search by name, email or phone..."
                   Adornment="Adornment.Start"
                   AdornmentIcon="@Icons.Material.Filled.Search"
-                  Immediate="true"
                   Clearable="true"
-                  FullWidth="true" />
+                  FullWidth="true"
+                  DebounceInterval="300" />
 </MudPaper>
 
-@if (State.IsLoading)
-{
-    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
-}
-else if (State.Error is not null)
-{
-    <MudAlert Severity="Severity.Error" Class="mb-4">@State.Error</MudAlert>
-}
-else
-{
-    <CustomerList Customers="FilteredCustomers"
-                  OnView="@(id => Nav.NavigateTo($"/customers/{id}"))"
-                  OnDelete="ConfirmDeleteAsync" />
-}
+<CustomerList @ref="list"
+              Search="@(string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm)"
+              OnView="@(id => Nav.NavigateTo($"/customers/{id}"))"
+              OnDelete="ConfirmDeleteAsync" />
 
 @code {
+    private CustomerList list = null!;
     private string searchTerm = string.Empty;
     private CancellationTokenSource cts = new();
-
-    private IReadOnlyList<CustomerDto> FilteredCustomers =>
-        string.IsNullOrWhiteSpace(searchTerm)
-            ? State.Customers
-            : State.Customers
-                .Where(c =>
-                    c.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    c.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    c.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    c.PhoneNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-    protected override async Task OnInitializedAsync()
-    {
-        State.OnChange += StateHasChanged;
-        await State.LoadCustomers(cts.Token);
-    }
 
     private async Task ConfirmDeleteAsync(CustomerDto customer)
     {
@@ -76,16 +50,21 @@ else
 
         if (result is { Canceled: false })
         {
-            var success = await State.DeleteCustomer(customer.Id, cts.Token);
-            Snackbar.Add(
-                success ? "Customer deleted." : (State.Error ?? "Failed to delete customer."),
-                success ? Severity.Success : Severity.Error);
+            try
+            {
+                await Api.DeleteCustomer(customer.Id, cts.Token);
+                Snackbar.Add("Customer deleted.", Severity.Success);
+                await list.ReloadAsync();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
         }
     }
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
         cts.Cancel();
         cts.Dispose();
     }

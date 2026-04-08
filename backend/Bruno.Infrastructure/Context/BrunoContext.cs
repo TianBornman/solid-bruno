@@ -27,6 +27,11 @@ public class BrunoContext : DbContext
 				dr.Property(x => x.StartDate).HasColumnName("StartDate");
 				dr.Property(x => x.EndDate).HasColumnName("EndDate");
 			});
+
+			entity.HasOne(b => b.Customer)
+				  .WithMany()
+				  .HasForeignKey(b => b.CustomerId)
+				  .OnDelete(DeleteBehavior.Restrict);
 		});
 	}
 }

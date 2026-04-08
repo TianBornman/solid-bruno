@@ -1,5 +1,5 @@
 @page "/vehicles"
-@inject VehicleState State
+@inject IVehicleApi Api
 @inject NavigationManager Nav
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -18,64 +18,24 @@
 </MudStack>
 
 <MudPaper Class="pa-4 mb-4" Elevation="1">
-    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="4">
-        <MudTextField @bind-Value="searchTerm"
-                      Placeholder="Search by registration, make or model..."
-                      Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search"
-                      Immediate="true"
-                      Clearable="true"
-                      Class="flex-grow-1" />
-        <MudSwitch @bind-Value="showDeleted"
-                   Label="Show deleted"
-                   Color="Color.Warning"
-                   Class="mb-0" />
-    </MudStack>
+    <MudTextField @bind-Value="searchTerm"
+                  Placeholder="Search by registration, make or model..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Clearable="true"
+                  Class="flex-grow-1"
+                  DebounceInterval="300" />
 </MudPaper>
 
-@if (State.IsLoading)
-{
-    <MudProgressLinear Color="Color.Secondary" Indeterminate="true" Class="mb-4" />
-}
-else if (State.Error is not null)
-{
-    <MudAlert Severity="Severity.Error" Class="mb-4">@State.Error</MudAlert>
-}
-else
-{
-    <VehicleList Vehicles="FilteredVehicles"
-                 OnView="@(id => Nav.NavigateTo($"/vehicles/{id}"))"
-                 OnDelete="ConfirmDeleteAsync" />
-}
+<VehicleList @ref="list"
+             Search="@(string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm)"
+             OnView="@(id => Nav.NavigateTo($"/vehicles/{id}"))"
+             OnDelete="ConfirmDeleteAsync" />
 
 @code {
+    private VehicleList list = null!;
     private string searchTerm = string.Empty;
-    private bool showDeleted = false;
     private CancellationTokenSource cts = new();
-
-    private IReadOnlyList<VehicleDto> FilteredVehicles
-    {
-        get
-        {
-            var vehicles = showDeleted
-                ? State.Vehicles
-                : State.Vehicles.Where(v => !v.IsDeleted);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-                vehicles = vehicles.Where(v =>
-                    v.RegistrationNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    v.Make.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    v.Model.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
-
-            return vehicles.ToList();
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        State.OnChange += StateHasChanged;
-        await State.LoadVehicles(cts.Token);
-    }
 
     private async Task ConfirmDeleteAsync(VehicleDto vehicle)
     {
@@ -90,18 +50,21 @@ else
 
         if (result is { Canceled: false })
         {
-            var success = await State.DeleteVehicle(vehicle.Id, cts.Token);
-            Snackbar.Add(
-                success ? "Vehicle deleted." : (State.Error ?? "Failed to delete vehicle."),
-                success ? Severity.Success : Severity.Error);
-
-            if (success) await State.LoadVehicles(cts.Token);
+            try
+            {
+                await Api.DeleteVehicle(vehicle.Id, cts.Token);
+                Snackbar.Add("Vehicle deleted.", Severity.Success);
+                await list.ReloadAsync();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
         }
     }
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
         cts.Cancel();
         cts.Dispose();
     }

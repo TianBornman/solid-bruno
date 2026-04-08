@@ -1,4 +1,4 @@
-﻿using Bruno.Domain.Entities;
+using Bruno.Domain.Entities;
 using Bruno.Domain.Repositories;
 using Bruno.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -34,11 +34,27 @@ public class CustomerRepository : ICustomerRepository
 
 	public async Task<Customer?> Get(Guid id)
 	{
-		return await dbContext.Customers.FirstOrDefaultAsync(user => user.Id == id);
+		return await dbContext.Customers.FirstOrDefaultAsync(customer => customer.Id == id);
 	}
 
 	public async Task<IEnumerable<Customer>> List(int skip, int take)
 	{
 		return await dbContext.Customers.Skip(skip).Take(take).ToListAsync();
+	}
+
+	public async Task<IEnumerable<Customer>> ListFiltered(int skip, int take, string? search)
+	{
+		var query = dbContext.Customers.AsQueryable();
+
+		if (!string.IsNullOrWhiteSpace(search))
+		{
+			var term = search.ToLower();
+			query = query.Where(c =>
+				c.FirstName.ToLower().Contains(term) ||
+				c.LastName.ToLower().Contains(term) ||
+				c.Email.ToLower().Contains(term));
+		}
+
+		return await query.Skip(skip).Take(take).ToListAsync();
 	}
 }

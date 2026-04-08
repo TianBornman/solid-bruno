@@ -1,6 +1,5 @@
 using Bruno.Features.Vehicle.Models;
 using Bruno.Shared.Api;
-using Bruno.Shared.Models;
 
 namespace Bruno.Features.Vehicle.Api;
 
@@ -28,9 +27,9 @@ public class VehicleApi : IVehicleApi
         return await api.GetAsync<VehicleDto>($"{Endpoints.Base}/{id}", ct);
     }
 
-    public async Task<IReadOnlyList<VehicleDto>> GetVehicles(ListRequest request, CancellationToken ct = default)
+    public async Task<IReadOnlyList<VehicleDto>> GetVehicles(ListVehicleRequest request, CancellationToken ct = default)
     {
-        return await api.PostAsync<ListRequest, List<VehicleDto>>(Endpoints.List, request, ct) ?? [];
+        return await api.PostAsync<ListVehicleRequest, List<VehicleDto>>(Endpoints.List, request, ct) ?? [];
     }
 
     public async Task UpdateVehicle(UpdateVehicleRequest request, CancellationToken ct = default)

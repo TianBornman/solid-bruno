@@ -1,5 +1,7 @@
-<MudTable T="VehicleDto"
-          Items="Vehicles"
+@inject IVehicleApi Api
+
+<MudTable ServerData="LoadDataAsync"
+          @ref="table"
           Hover="true"
           Striped="true"
           Elevation="2"
@@ -65,7 +67,34 @@
 </MudTable>
 
 @code {
-    [Parameter, EditorRequired] public IReadOnlyList<VehicleDto> Vehicles { get; set; } = [];
+    [Parameter] public string? Search { get; set; }
     [Parameter] public EventCallback<Guid> OnView { get; set; }
     [Parameter] public EventCallback<VehicleDto> OnDelete { get; set; }
+
+    private MudTable<VehicleDto> table = null!;
+    private string? previousSearch;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (previousSearch != Search)
+        {
+            previousSearch = Search;
+            if (table is not null)
+                await table.ReloadServerData();
+        }
+    }
+
+    public Task ReloadAsync() => table.ReloadServerData();
+
+    private async Task<TableData<VehicleDto>> LoadDataAsync(TableState state, CancellationToken ct)
+    {
+        var skip = state.Page * state.PageSize;
+        var items = await Api.GetVehicles(new ListVehicleRequest(skip, state.PageSize, Search), ct);
+
+        var total = items.Count < state.PageSize
+            ? skip + items.Count
+            : (state.Page + 2) * state.PageSize;
+
+        return new TableData<VehicleDto> { Items = items, TotalItems = total };
+    }
 }

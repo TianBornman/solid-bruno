@@ -1,4 +1,4 @@
-﻿using Bruno.Domain.Entities;
+using Bruno.Domain.Entities;
 using Bruno.Domain.Enums;
 using Bruno.Domain.Repositories;
 using Bruno.Domain.ValueObjects;
@@ -46,6 +46,30 @@ public class BookingRepository : IBookingRepository
 		return await dbContext.Bookings.Include(booking => booking.Vehicle)
 									   .Include(booking => booking.Customer)
 									   .Skip(skip).Take(take).ToListAsync();
+	}
+
+	public async Task<IEnumerable<Booking>> ListFiltered(int skip, int take, BookingStatus? status, string? search)
+	{
+		var query = dbContext.Bookings
+			.Include(booking => booking.Vehicle)
+			.Include(booking => booking.Customer)
+			.AsQueryable();
+
+		if (status.HasValue)
+			query = query.Where(b => b.Status == status.Value);
+
+		if (!string.IsNullOrWhiteSpace(search))
+		{
+			var term = search.ToLower();
+			query = query.Where(b =>
+				b.Customer.FirstName.ToLower().Contains(term) ||
+				b.Customer.LastName.ToLower().Contains(term) ||
+				b.Vehicle.RegistrationNumber.ToLower().Contains(term) ||
+				b.Vehicle.Make.ToLower().Contains(term) ||
+				b.Vehicle.Model.ToLower().Contains(term));
+		}
+
+		return await query.Skip(skip).Take(take).ToListAsync();
 	}
 
 	public async Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange)

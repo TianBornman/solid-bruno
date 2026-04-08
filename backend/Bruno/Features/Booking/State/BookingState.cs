@@ -26,7 +26,7 @@ public class BookingState
         SetLoading(true);
         try
         {
-            Bookings = await api.GetBookings(new ListRequest(0, 100), ct);
+            Bookings = await api.GetBookings(new ListBookingRequest(0, 100, null, null), ct);
         }
         catch (Exception ex)
         {

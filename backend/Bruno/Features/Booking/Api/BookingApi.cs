@@ -1,6 +1,5 @@
 using Bruno.Features.Booking.Models;
 using Bruno.Shared.Api;
-using Bruno.Shared.Models;
 
 namespace Bruno.Features.Booking.Api;
 
@@ -28,9 +27,9 @@ public class BookingApi : IBookingApi
         return await api.GetAsync<BookingDto>($"{Endpoints.Base}/{id}", ct);
     }
 
-    public async Task<IReadOnlyList<BookingDto>> GetBookings(ListRequest request, CancellationToken ct = default)
+    public async Task<IReadOnlyList<BookingDto>> GetBookings(ListBookingRequest request, CancellationToken ct = default)
     {
-        return await api.PostAsync<ListRequest, List<BookingDto>>(Endpoints.List, request, ct) ?? [];
+        return await api.PostAsync<ListBookingRequest, List<BookingDto>>(Endpoints.List, request, ct) ?? [];
     }
 
     public async Task UpdateBooking(UpdateBookingRequest request, CancellationToken ct = default)

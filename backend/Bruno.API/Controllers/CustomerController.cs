@@ -1,4 +1,3 @@
-using Bruno.Application.DTOs;
 using Bruno.Application.DTOs.Customer;
 using Bruno.Application.Features.Customer.Commands.Create;
 using Bruno.Application.Features.Customer.Commands.Delete;
@@ -21,48 +20,66 @@ public class CustomerController : ControllerBase
 		this.mediator = mediator;
 	}
 
+	/// <summary>Creates a new customer.</summary>
+	/// <response code="200">Returns the ID of the created customer.</response>
+	/// <response code="400">Validation failed.</response>
 	[HttpPost]
+	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create(CreateCustomerDto dto)
 	{
 		var command = new CreateCustomerCommand(dto.FirstName, dto.LastName, dto.Email, dto.PhoneNumber);
-
 		var result = await mediator.Send(command);
 		return Ok(result);
 	}
 
-	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(Guid id)
+	/// <summary>Gets a customer by ID.</summary>
+	/// <response code="200">Returns the customer.</response>
+	/// <response code="404">Customer not found.</response>
+	[HttpGet("{id}")]
+	[ProducesResponseType(typeof(GetCustomerDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var command = new DeleteCustomerCommand(id);
+		var result = await mediator.Send(new GetCustomerQuery(id));
+		return Ok(result);
+	}
 
-		await mediator.Send(command);
+	/// <summary>Lists customers with optional search filter across name and email.</summary>
+	/// <response code="200">Returns a list of customers.</response>
+	[HttpPost("list")]
+	[ProducesResponseType(typeof(List<GetCustomerDto>), StatusCodes.Status200OK)]
+	public async Task<IActionResult> List(ListCustomerDto dto)
+	{
+		var result = await mediator.Send(new ListCustomerQuery(dto.Skip, dto.Take, dto.Search));
+		return Ok(result);
+	}
+
+	/// <summary>Updates an existing customer.</summary>
+	/// <response code="204">Customer updated.</response>
+	/// <response code="400">Validation failed.</response>
+	/// <response code="404">Customer not found.</response>
+	[HttpPut]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Update(UpdateCustomerDto dto)
+	{
+		await mediator.Send(new UpdateCustomerCommand(dto.Id, dto.FirstName, dto.LastName, dto.Email, dto.PhoneNumber));
 		return NoContent();
 	}
 
-	[HttpGet("{id}")]
-	public async Task<IActionResult> Get(Guid id)
+	/// <summary>Deletes a customer. Fails if the customer has any bookings.</summary>
+	/// <response code="204">Customer deleted.</response>
+	/// <response code="400">Customer has existing bookings.</response>
+	/// <response code="404">Customer not found.</response>
+	[HttpDelete("{id}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Delete(Guid id)
 	{
-		var command = new GetCustomerQuery(id);
-
-		var result = await mediator.Send(command);
-		return Ok(result);
-	}
-
-	[HttpPost("list")]
-	public async Task<IActionResult> List(ListDto dto)
-	{
-		var command = new ListCustomerQuery(dto.Skip, dto.Take);
-
-		var result = await mediator.Send(command);
-		return Ok(result);
-	}
-
-	[HttpPut]
-	public async Task<IActionResult> Update(UpdateCustomerDto dto)
-	{
-		var command = new UpdateCustomerCommand(dto.Id, dto.FirstName, dto.LastName, dto.Email, dto.PhoneNumber);
-
-		await mediator.Send(command);
+		await mediator.Send(new DeleteCustomerCommand(id));
 		return NoContent();
 	}
 }

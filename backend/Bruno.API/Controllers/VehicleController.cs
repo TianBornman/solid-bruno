@@ -1,10 +1,9 @@
-using Bruno.Application.DTOs;
 using Bruno.Application.DTOs.Vehicle;
 using Bruno.Application.Features.Vehicle.Commands.Create;
 using Bruno.Application.Features.Vehicle.Commands.Delete;
+using Bruno.Application.Features.Vehicle.Commands.Update;
 using Bruno.Application.Features.Vehicle.Queries.Get;
 using Bruno.Application.Features.Vehicle.Queries.List;
-using Bruno.Application.Features.Vehicle.Commands.Update;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,48 +20,64 @@ public class VehicleController : ControllerBase
 		this.mediator = mediator;
 	}
 
+	/// <summary>Creates a new vehicle.</summary>
+	/// <response code="200">Returns the ID of the created vehicle.</response>
+	/// <response code="400">Validation failed.</response>
 	[HttpPost]
+	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create(CreateVehicleDto dto)
 	{
 		var command = new CreateVehicleCommand(dto.RegistrationNumber, dto.Make, dto.Model, dto.Year, dto.DailyRate);
-
 		var result = await mediator.Send(command);
 		return Ok(result);
 	}
 
-	[HttpDelete("{id}")]
-	public async Task<IActionResult> Delete(Guid id)
+	/// <summary>Gets a vehicle by ID.</summary>
+	/// <response code="200">Returns the vehicle.</response>
+	/// <response code="404">Vehicle not found.</response>
+	[HttpGet("{id}")]
+	[ProducesResponseType(typeof(GetVehicleDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Get(Guid id)
 	{
-		var command = new DeleteVehicleCommand(id);
+		var result = await mediator.Send(new GetVehicleQuery(id));
+		return Ok(result);
+	}
 
-		await mediator.Send(command);
+	/// <summary>Lists vehicles with optional search filter.</summary>
+	/// <response code="200">Returns a list of vehicles.</response>
+	[HttpPost("list")]
+	[ProducesResponseType(typeof(List<GetVehicleDto>), StatusCodes.Status200OK)]
+	public async Task<IActionResult> List(ListVehicleDto dto)
+	{
+		var result = await mediator.Send(new ListVehicleQuery(dto.Skip, dto.Take, dto.Search));
+		return Ok(result);
+	}
+
+	/// <summary>Updates an existing vehicle.</summary>
+	/// <response code="204">Vehicle updated.</response>
+	/// <response code="400">Validation failed.</response>
+	/// <response code="404">Vehicle not found.</response>
+	[HttpPut]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Update(UpdateVehicleDto dto)
+	{
+		await mediator.Send(new UpdateVehicleCommand(dto.Id, dto.RegistrationNumber, dto.Make, dto.Model, dto.Year, dto.DailyRate));
 		return NoContent();
 	}
 
-	[HttpGet("{id}")]
-	public async Task<IActionResult> Get(Guid id)
+	/// <summary>Soft-deletes a vehicle.</summary>
+	/// <response code="204">Vehicle deleted.</response>
+	/// <response code="404">Vehicle not found.</response>
+	[HttpDelete("{id}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Delete(Guid id)
 	{
-		var command = new GetVehicleQuery(id);
-
-		var result = await mediator.Send(command);
-		return Ok(result);
-	}
-
-	[HttpPost("list")]
-	public async Task<IActionResult> List(ListDto dto)
-	{
-		var command = new ListVehicleQuery(dto.Skip, dto.Take);
-
-		var result = await mediator.Send(command);
-		return Ok(result);
-	}
-
-	[HttpPut] 
-	public async Task<IActionResult> Update(UpdateVehicleDto dto)
-	{
-		var command = new UpdateVehicleCommand(dto.Id, dto.RegistrationNumber, dto.Make, dto.Model, dto.Year, dto.DailyRate);
-
-		await mediator.Send(command);
+		await mediator.Send(new DeleteVehicleCommand(id));
 		return NoContent();
 	}
 }

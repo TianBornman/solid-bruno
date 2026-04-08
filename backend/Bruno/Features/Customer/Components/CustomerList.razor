@@ -1,5 +1,7 @@
-<MudTable T="CustomerDto"
-          Items="Customers"
+@inject ICustomerApi Api
+
+<MudTable ServerData="LoadDataAsync"
+          @ref="table"
           Hover="true"
           Striped="true"
           Dense="false"
@@ -35,12 +37,10 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Visibility"
                                Size="Size.Small"
                                Color="Color.Primary"
-
                                OnClick="@(() => OnView.InvokeAsync(context.Id))" />
                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                Size="Size.Small"
                                Color="Color.Error"
-
                                OnClick="@(() => OnDelete.InvokeAsync(context))" />
             </MudStack>
         </MudTd>
@@ -57,7 +57,34 @@
 </MudTable>
 
 @code {
-    [Parameter, EditorRequired] public IReadOnlyList<CustomerDto> Customers { get; set; } = [];
+    [Parameter] public string? Search { get; set; }
     [Parameter] public EventCallback<Guid> OnView { get; set; }
     [Parameter] public EventCallback<CustomerDto> OnDelete { get; set; }
+
+    private MudTable<CustomerDto> table = null!;
+    private string? previousSearch;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (previousSearch != Search)
+        {
+            previousSearch = Search;
+            if (table is not null)
+                await table.ReloadServerData();
+        }
+    }
+
+    public Task ReloadAsync() => table.ReloadServerData();
+
+    private async Task<TableData<CustomerDto>> LoadDataAsync(TableState state, CancellationToken ct)
+    {
+        var skip = state.Page * state.PageSize;
+        var items = await Api.GetCustomers(new ListCustomerRequest(skip, state.PageSize, Search), ct);
+
+        var total = items.Count < state.PageSize
+            ? skip + items.Count
+            : (state.Page + 2) * state.PageSize;
+
+        return new TableData<CustomerDto> { Items = items, TotalItems = total };
+    }
 }
