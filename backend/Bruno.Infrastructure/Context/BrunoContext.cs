@@ -17,6 +17,7 @@ public class BrunoContext : DbContext
 
 		modelBuilder.Entity<Vehicle>().HasQueryFilter(v => !v.IsDeleted);
 		modelBuilder.Entity<Vehicle>().HasIndex(v => v.RegistrationNumber).IsUnique();
+		modelBuilder.Entity<Vehicle>().HasIndex(v => v.IsDeleted);
 
 		modelBuilder.Entity<Customer>().HasIndex(c => c.Email).IsUnique();
 

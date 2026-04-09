@@ -72,10 +72,11 @@ public class BookingRepository : IBookingRepository
 		return await query.Skip(skip).Take(take).ToListAsync();
 	}
 
-	public async Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange)
+	public async Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange, Guid? excludeBookingId = null)
 	{
 		return await dbContext.Bookings.Where(b => b.VehicleId == vehicleId)
 										.Where(b => b.Status != BookingStatus.Cancelled)
+										.Where(b => excludeBookingId == null || b.Id != excludeBookingId)
 										.AnyAsync(b =>
 											b.DateRange.StartDate < dateRange.EndDate &&
 											b.DateRange.EndDate > dateRange.StartDate);

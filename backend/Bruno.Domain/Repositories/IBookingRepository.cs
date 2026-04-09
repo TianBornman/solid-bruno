@@ -6,7 +6,7 @@ namespace Bruno.Domain.Repositories;
 
 public interface IBookingRepository : IRepository<Booking>
 {
-	Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange);
+	Task<bool> HasOverlappingBookingAsync(Guid vehicleId, DateRange dateRange, Guid? excludeBookingId = null);
 	Task<bool> ExistsForCustomerAsync(Guid customerId);
 	Task<IEnumerable<Booking>> ListFiltered(int skip, int take, BookingStatus? status, string? search);
 }

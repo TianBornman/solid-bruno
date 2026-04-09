@@ -4,6 +4,7 @@ using Bruno.Domain.Enums;
 using Bruno.Domain.Exceptions;
 using Bruno.Domain.Repositories;
 using Bruno.Domain.ValueObjects;
+using MediatR;
 using Moq;
 
 namespace Bruno.Tests.Commands;
@@ -13,6 +14,7 @@ public class CreateBookingCommandHandlerTests
 	private readonly Mock<IUnitOfWork> uow;
 	private readonly Mock<IVehicleRepository> vehicleRepository;
 	private readonly Mock<IBookingRepository> bookingRepository;
+	private readonly Mock<IPublisher> publisher;
 	private readonly CreateBookingCommandHandler handler;
 
 	public CreateBookingCommandHandlerTests()
@@ -20,11 +22,12 @@ public class CreateBookingCommandHandlerTests
 		uow = new Mock<IUnitOfWork>();
 		vehicleRepository = new Mock<IVehicleRepository>();
 		bookingRepository = new Mock<IBookingRepository>();
+		publisher = new Mock<IPublisher>();
 
 		uow.Setup(u => u.VehicleRepository).Returns(vehicleRepository.Object);
 		uow.Setup(u => u.BookingRepository).Returns(bookingRepository.Object);
 
-		handler = new CreateBookingCommandHandler(uow.Object);
+		handler = new CreateBookingCommandHandler(uow.Object, publisher.Object);
 	}
 
 	[Fact]
