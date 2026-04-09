@@ -17,7 +17,36 @@
 
 @if (State.IsLoading)
 {
-    <MudProgressLinear Color="Color.Tertiary" Indeterminate="true" />
+    <MudStack Spacing="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudSkeleton SkeletonType="SkeletonType.Circle" Width="56px" Height="56px" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudSkeleton Width="35%" />
+                    <MudSkeleton Width="25%" />
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudSkeleton Width="40%" Class="mb-2" />
+                <MudSkeleton Width="55%" Class="mb-2" />
+                <MudSkeleton Width="50%" Class="mb-2" />
+                <MudSkeleton Width="25%" />
+            </MudCardContent>
+        </MudCard>
+        <MudPaper Class="pa-6" Elevation="2">
+            <MudSkeleton Width="20%" Height="28px" Class="mb-6" />
+            <MudGrid>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+                <MudItem xs="12" sm="6"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="56px" /></MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudStack>
 }
 else if (booking is null)
 {
