@@ -2,12 +2,12 @@
 
 namespace Bruno.Domain.ValueObjects;
 
-public class DateRange
+public record DateRange
 {
-	public DateTime StartDate { get; }
-	public DateTime EndDate { get; }
+	public DateTime StartDate { get; init; }
+	public DateTime EndDate { get; init; }
 
-	public DateRange() { }
+	private DateRange() { }
 
 	public DateRange(DateTime startDate, DateTime endDate)
 	{
@@ -18,13 +18,6 @@ public class DateRange
 		EndDate = endDate;
 	}
 
-	public bool IsInFuture()
-	{
-		return StartDate >= DateTime.UtcNow;
-	}
-
-	public bool IsInPast()
-	{
-		return EndDate <= DateTime.UtcNow;
-	}
+	public bool IsInFuture() => StartDate >= DateTime.UtcNow;
+	public bool IsInPast() => EndDate <= DateTime.UtcNow;
 }
