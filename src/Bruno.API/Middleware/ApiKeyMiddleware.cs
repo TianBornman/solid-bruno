@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 namespace Bruno.API.Middleware;
 
 public class ApiKeyMiddleware
@@ -30,9 +33,12 @@ public class ApiKeyMiddleware
 			return;
 		}
 
-		var expectedKey = configuration["ApiKey"];
+		var expectedKey = configuration["ApiKey"] ?? string.Empty;
 
-		if (!string.Equals(providedKey, expectedKey, StringComparison.Ordinal))
+		var expectedBytes = Encoding.UTF8.GetBytes(expectedKey);
+		var providedBytes = Encoding.UTF8.GetBytes(providedKey.ToString());
+
+		if (!CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes))
 		{
 			context.Response.StatusCode = StatusCodes.Status401Unauthorized;
 			await context.Response.WriteAsJsonAsync(new { title = "Invalid API key." });
