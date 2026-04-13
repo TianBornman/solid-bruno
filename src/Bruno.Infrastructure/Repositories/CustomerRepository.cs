@@ -17,19 +17,18 @@ public class CustomerRepository : ICustomerRepository
 	public async Task Add(Customer entity)
 	{
 		await dbContext.Customers.AddAsync(entity);
-		await dbContext.SaveChangesAsync();
 	}
 
-	public async Task Update(Customer entity)
+	public Task Update(Customer entity)
 	{
 		dbContext.Update(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
-	public async Task Delete(Customer entity)
+	public Task Delete(Customer entity)
 	{
 		dbContext.Customers.Remove(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
 	public async Task<Customer?> Get(Guid id)

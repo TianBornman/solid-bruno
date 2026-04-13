@@ -27,6 +27,7 @@ public class CreateVehicleCommandHandler : IRequestHandler<CreateVehicleCommand,
 		};
 
 		await uow.VehicleRepository.Add(entity);
+		await uow.SaveChanges();
 
 		await publisher.Publish(new VehicleCreatedEvent(entity.Id, entity.RegistrationNumber), cancellationToken);
 

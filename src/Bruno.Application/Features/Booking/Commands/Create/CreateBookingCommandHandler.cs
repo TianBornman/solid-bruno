@@ -41,6 +41,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
 			throw new DomainException("Cannot overlap bookings for the same vehicle.");
 
 		await uow.BookingRepository.Add(entity);
+		await uow.SaveChanges();
 
 		await publisher.Publish(new BookingCreatedEvent(entity.Id, entity.VehicleId, entity.CustomerId), cancellationToken);
 

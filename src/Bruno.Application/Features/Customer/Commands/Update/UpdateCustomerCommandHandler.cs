@@ -24,5 +24,6 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
 		entity.PhoneNumber = request.PhoneNumber;
 
 		await uow.CustomerRepository.Update(entity);
+		await uow.SaveChanges();
 	}
 }

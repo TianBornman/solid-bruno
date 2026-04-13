@@ -21,5 +21,6 @@ public class DeleteBookingCommandHandler : IRequestHandler<DeleteBookingCommand>
 		entity.CanDelete();
 
 		await uow.BookingRepository.Delete(entity);
+		await uow.SaveChanges();
 	}
 }

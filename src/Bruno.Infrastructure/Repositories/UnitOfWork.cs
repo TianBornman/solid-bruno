@@ -7,9 +7,13 @@ public class UnitOfWork : IUnitOfWork
 {
 	private readonly BrunoContext dbContext;
 
-	public IBookingRepository BookingRepository => new BookingRepository(dbContext);
-	public ICustomerRepository CustomerRepository => new CustomerRepository(dbContext);
-	public IVehicleRepository VehicleRepository => new VehicleRepository(dbContext);
+	private IBookingRepository? _bookingRepository;
+	private ICustomerRepository? _customerRepository;
+	private IVehicleRepository? _vehicleRepository;
+
+	public IBookingRepository BookingRepository => _bookingRepository ??= new BookingRepository(dbContext);
+	public ICustomerRepository CustomerRepository => _customerRepository ??= new CustomerRepository(dbContext);
+	public IVehicleRepository VehicleRepository => _vehicleRepository ??= new VehicleRepository(dbContext);
 
 	public UnitOfWork(BrunoContext dbContext)
 	{

@@ -17,21 +17,19 @@ public class VehicleRepository : IVehicleRepository
 	public async Task Add(Vehicle entity)
 	{
 		await dbContext.Vehicles.AddAsync(entity);
-		await dbContext.SaveChangesAsync();
 	}
 
-	public async Task Update(Vehicle entity)
+	public Task Update(Vehicle entity)
 	{
 		dbContext.Update(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
-	public async Task Delete(Vehicle entity)
+	public Task Delete(Vehicle entity)
 	{
 		entity.IsDeleted = true;
-
 		dbContext.Update(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
 	public async Task<Vehicle?> Get(Guid id)

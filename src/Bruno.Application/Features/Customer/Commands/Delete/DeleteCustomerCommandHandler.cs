@@ -24,5 +24,6 @@ public class DeleteCustomerCommandHandler : IRequestHandler<DeleteCustomerComman
 			throw new DomainException("Customer cannot be deleted because bookings exist.");
 
 		await uow.CustomerRepository.Delete(entity);
+		await uow.SaveChanges();
 	}
 }

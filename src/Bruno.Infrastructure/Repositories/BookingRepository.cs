@@ -19,19 +19,18 @@ public class BookingRepository : IBookingRepository
 	public async Task Add(Booking entity)
 	{
 		await dbContext.Bookings.AddAsync(entity);
-		await dbContext.SaveChangesAsync();
 	}
 
-	public async Task Update(Booking entity)
+	public Task Update(Booking entity)
 	{
 		dbContext.Update(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
-	public async Task Delete(Booking entity)
+	public Task Delete(Booking entity)
 	{
 		dbContext.Bookings.Remove(entity);
-		await dbContext.SaveChangesAsync();
+		return Task.CompletedTask;
 	}
 
 	public async Task<Booking?> Get(Guid id)

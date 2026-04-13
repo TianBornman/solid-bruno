@@ -23,6 +23,7 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
 		};
 
 		await uow.CustomerRepository.Add(entity);
+		await uow.SaveChanges();
 
 		return entity.Id;
 	}

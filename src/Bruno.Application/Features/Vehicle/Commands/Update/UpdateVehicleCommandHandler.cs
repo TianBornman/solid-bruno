@@ -25,5 +25,6 @@ public class UpdateVehicleCommandHandler : IRequestHandler<UpdateVehicleCommand>
 		entity.DailyRate = request.DailyRate;
 
 		await uow.VehicleRepository.Update(entity);
+		await uow.SaveChanges();
 	}
 }

@@ -37,6 +37,7 @@ public class UpdateBookingCommandHandler : IRequestHandler<UpdateBookingCommand>
 		entity.CustomerId = request.CustomerId;
 
 		await uow.BookingRepository.Update(entity);
+		await uow.SaveChanges();
 
 		if (wasCancelled)
 			await publisher.Publish(new BookingCancelledEvent(entity.Id), cancellationToken);
