@@ -21,18 +21,18 @@ public class BookingController : ControllerBase
 	}
 
 	/// <summary>Creates a new booking. Validates date range and checks for overlaps.</summary>
-	/// <response code="200">Returns the ID of the created booking.</response>
+	/// <response code="201">Returns the ID of the created booking.</response>
 	/// <response code="400">Validation failed or booking overlaps an existing booking.</response>
 	/// <response code="404">Vehicle or customer not found.</response>
 	[HttpPost]
-	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
 	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> Create(CreateBookingDto dto)
 	{
 		var command = new CreateBookingCommand(dto.StartDate, dto.EndDate, dto.TotalPrice, dto.Status, dto.VehicleId, dto.CustomerId);
 		var result = await mediator.Send(command);
-		return Ok(result);
+		return CreatedAtAction(nameof(Get), new { id = result }, result);
 	}
 
 	/// <summary>Gets a booking by ID.</summary>

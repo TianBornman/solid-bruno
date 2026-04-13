@@ -21,16 +21,16 @@ public class CustomerController : ControllerBase
 	}
 
 	/// <summary>Creates a new customer.</summary>
-	/// <response code="200">Returns the ID of the created customer.</response>
+	/// <response code="201">Returns the ID of the created customer.</response>
 	/// <response code="400">Validation failed.</response>
 	[HttpPost]
-	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
 	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create(CreateCustomerDto dto)
 	{
 		var command = new CreateCustomerCommand(dto.FirstName, dto.LastName, dto.Email, dto.PhoneNumber);
 		var result = await mediator.Send(command);
-		return Ok(result);
+		return CreatedAtAction(nameof(Get), new { id = result }, result);
 	}
 
 	/// <summary>Gets a customer by ID.</summary>

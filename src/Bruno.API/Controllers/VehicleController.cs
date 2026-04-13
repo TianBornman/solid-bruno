@@ -21,16 +21,16 @@ public class VehicleController : ControllerBase
 	}
 
 	/// <summary>Creates a new vehicle.</summary>
-	/// <response code="200">Returns the ID of the created vehicle.</response>
+	/// <response code="201">Returns the ID of the created vehicle.</response>
 	/// <response code="400">Validation failed.</response>
 	[HttpPost]
-	[ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
 	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> Create(CreateVehicleDto dto)
 	{
 		var command = new CreateVehicleCommand(dto.RegistrationNumber, dto.Make, dto.Model, dto.Year, dto.DailyRate);
 		var result = await mediator.Send(command);
-		return Ok(result);
+		return CreatedAtAction(nameof(Get), new { id = result }, result);
 	}
 
 	/// <summary>Gets a vehicle by ID.</summary>
