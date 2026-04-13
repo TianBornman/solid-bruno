@@ -27,7 +27,12 @@ public class VehicleRepository : IVehicleRepository
 
 	public Task Delete(Vehicle entity)
 	{
-		entity.IsDeleted = true;
+		throw new NotSupportedException("Vehicles cannot deleted. Soft Delete instead.");
+	}
+
+	public Task SoftDelete(Vehicle entity)
+	{
+		entity.SoftDelete();
 		dbContext.Update(entity);
 		return Task.CompletedTask;
 	}

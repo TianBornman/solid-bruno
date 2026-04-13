@@ -21,7 +21,7 @@ public class DeleteVehicleCommandHandler : IRequestHandler<DeleteVehicleCommand>
 		var entity = await uow.VehicleRepository.Get(request.Id)
 			?? throw new NotFoundException("Vehicle not found.");
 
-		await uow.VehicleRepository.Delete(entity);
+		await uow.VehicleRepository.SoftDelete(entity);
 		await uow.SaveChanges();
 
 		await publisher.Publish(new VehicleDeletedEvent(entity.Id), cancellationToken);

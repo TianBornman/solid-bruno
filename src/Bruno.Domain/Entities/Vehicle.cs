@@ -16,4 +16,9 @@ public class Vehicle : BaseEntity
 		if (IsDeleted)
 			throw new DomainException("Cannot book a deleted vehicle.");
 	}
+
+	public void SoftDelete()
+	{
+		IsDeleted = true;
+	}
 }
