@@ -21,8 +21,5 @@ public class Booking : BaseEntity
 	{
 		if (!DateRange.IsInFuture())
 			throw new DomainException("Only future bookings can be deleted.");
-
-		if (DateRange.IsInPast())
-			throw new DomainException("Past bookings cannot be deleted.");
 	}
 }
