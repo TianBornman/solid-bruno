@@ -29,7 +29,11 @@ public class CustomerApi : ICustomerApi
 
     public async Task<IReadOnlyList<CustomerDto>> GetCustomers(ListCustomerRequest request, CancellationToken ct = default)
     {
-        return await api.PostAsync<ListCustomerRequest, List<CustomerDto>>(Endpoints.List, request, ct) ?? [];
+        var query = $"?skip={request.Skip}&take={request.Take}";
+        if (!string.IsNullOrWhiteSpace(request.Search))
+            query += $"&search={Uri.EscapeDataString(request.Search)}";
+
+        return await api.GetAsync<List<CustomerDto>>($"{Endpoints.Base}{query}", ct) ?? [];
     }
 
     public async Task<Guid?> UpdateCustomer(UpdateCustomerRequest request, CancellationToken ct = default)

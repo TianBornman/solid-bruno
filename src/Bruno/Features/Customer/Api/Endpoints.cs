@@ -3,5 +3,4 @@
 public static class Endpoints
 {
 	public const string Base = "customer";
-	public const string List = "customer/list";
 }

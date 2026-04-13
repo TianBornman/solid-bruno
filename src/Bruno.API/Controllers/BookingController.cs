@@ -49,9 +49,9 @@ public class BookingController : ControllerBase
 
 	/// <summary>Lists bookings with optional filters by status, vehicle, or customer.</summary>
 	/// <response code="200">Returns a list of bookings.</response>
-	[HttpPost("list")]
+	[HttpGet]
 	[ProducesResponseType(typeof(List<GetBookingDto>), StatusCodes.Status200OK)]
-	public async Task<IActionResult> List(ListBookingDto dto)
+	public async Task<IActionResult> List([FromQuery] ListBookingDto dto)
 	{
 		var result = await mediator.Send(new ListBookingQuery(dto.Skip, dto.Take, dto.Status, dto.Search));
 		return Ok(result);

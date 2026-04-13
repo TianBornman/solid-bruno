@@ -29,7 +29,13 @@ public class BookingApi : IBookingApi
 
     public async Task<IReadOnlyList<BookingDto>> GetBookings(ListBookingRequest request, CancellationToken ct = default)
     {
-        return await api.PostAsync<ListBookingRequest, List<BookingDto>>(Endpoints.List, request, ct) ?? [];
+        var query = $"?skip={request.Skip}&take={request.Take}";
+        if (request.Status.HasValue)
+            query += $"&status={Uri.EscapeDataString(request.Status.Value.ToString())}";
+        if (!string.IsNullOrWhiteSpace(request.Search))
+            query += $"&search={Uri.EscapeDataString(request.Search)}";
+
+        return await api.GetAsync<List<BookingDto>>($"{Endpoints.Base}{query}", ct) ?? [];
     }
 
     public async Task UpdateBooking(UpdateBookingRequest request, CancellationToken ct = default)

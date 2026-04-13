@@ -47,9 +47,9 @@ public class VehicleController : ControllerBase
 
 	/// <summary>Lists vehicles with optional search filter.</summary>
 	/// <response code="200">Returns a list of vehicles.</response>
-	[HttpPost("list")]
+	[HttpGet]
 	[ProducesResponseType(typeof(List<GetVehicleDto>), StatusCodes.Status200OK)]
-	public async Task<IActionResult> List(ListVehicleDto dto)
+	public async Task<IActionResult> List([FromQuery] ListVehicleDto dto)
 	{
 		var result = await mediator.Send(new ListVehicleQuery(dto.Skip, dto.Take, dto.Search));
 		return Ok(result);

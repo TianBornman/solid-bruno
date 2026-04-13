@@ -47,9 +47,9 @@ public class CustomerController : ControllerBase
 
 	/// <summary>Lists customers with optional search filter across name and email.</summary>
 	/// <response code="200">Returns a list of customers.</response>
-	[HttpPost("list")]
+	[HttpGet]
 	[ProducesResponseType(typeof(List<GetCustomerDto>), StatusCodes.Status200OK)]
-	public async Task<IActionResult> List(ListCustomerDto dto)
+	public async Task<IActionResult> List([FromQuery] ListCustomerDto dto)
 	{
 		var result = await mediator.Send(new ListCustomerQuery(dto.Skip, dto.Take, dto.Search));
 		return Ok(result);

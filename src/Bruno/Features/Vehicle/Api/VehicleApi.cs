@@ -29,7 +29,11 @@ public class VehicleApi : IVehicleApi
 
     public async Task<IReadOnlyList<VehicleDto>> GetVehicles(ListVehicleRequest request, CancellationToken ct = default)
     {
-        return await api.PostAsync<ListVehicleRequest, List<VehicleDto>>(Endpoints.List, request, ct) ?? [];
+        var query = $"?skip={request.Skip}&take={request.Take}";
+        if (!string.IsNullOrWhiteSpace(request.Search))
+            query += $"&search={Uri.EscapeDataString(request.Search)}";
+
+        return await api.GetAsync<List<VehicleDto>>($"{Endpoints.Base}{query}", ct) ?? [];
     }
 
     public async Task UpdateVehicle(UpdateVehicleRequest request, CancellationToken ct = default)
