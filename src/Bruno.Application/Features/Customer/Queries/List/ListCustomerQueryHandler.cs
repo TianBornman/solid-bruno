@@ -17,7 +17,6 @@ public class ListCustomerQueryHandler : IRequestHandler<ListCustomerQuery, List<
 	{
 		var entities = await uow.CustomerRepository.ListFiltered(request.Skip, request.Take, request.Search);
 
-		return entities.Select(entity => new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName,
-									entity.Email, entity.PhoneNumber, entity.CreatedAt)).ToList();
+		return entities.Select(GetCustomerDto.FromEntity).ToList();
 	}
 }

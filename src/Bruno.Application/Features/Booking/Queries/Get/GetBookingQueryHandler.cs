@@ -19,9 +19,6 @@ public class GetBookingQueryHandler : IRequestHandler<GetBookingQuery, GetBookin
 		var entity = await uow.BookingRepository.Get(request.Id) 
 			?? throw new NotFoundException($"Booking not found.");
 
-		var dto = new GetBookingDto(entity.Id, entity.DateRange.StartDate, entity.DateRange.EndDate, entity.TotalPrice, entity.Status,
-					entity.Vehicle.Id, entity.Customer.Id, entity.CreatedAt);
-
-		return dto;
+		return GetBookingDto.FromEntity(entity);
 	}
 }

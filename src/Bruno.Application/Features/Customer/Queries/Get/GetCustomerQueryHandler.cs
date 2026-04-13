@@ -19,8 +19,6 @@ public class GetCustomerQueryHandler : IRequestHandler<GetCustomerQuery, GetCust
 		var entity = await uow.CustomerRepository.Get(request.Id) 
 			?? throw new NotFoundException($"Customer not found."); ;
 
-		var dto = new GetCustomerDto(entity.Id, entity.FirstName, entity.LastName, entity.Email, entity.PhoneNumber, entity.CreatedAt);
-
-		return dto;
+		return GetCustomerDto.FromEntity(entity);
 	}
 }

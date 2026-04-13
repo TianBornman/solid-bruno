@@ -19,9 +19,6 @@ public class GetVehicleQueryHandler : IRequestHandler<GetVehicleQuery, GetVehicl
 		var entity = await uow.VehicleRepository.Get(request.Id) 
 			?? throw new NotFoundException("Vehicle not found.");
 
-		var dto = new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
-									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted);
-
-		return dto;
+		return GetVehicleDto.FromEntity(entity);
 	}
 }

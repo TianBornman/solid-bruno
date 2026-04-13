@@ -17,7 +17,6 @@ public class ListBookingQueryHandler : IRequestHandler<ListBookingQuery, List<Ge
 	{
 		var entities = await uow.BookingRepository.ListFiltered(request.Skip, request.Take, request.Status, request.Search);
 
-		return entities.Select(entity => new GetBookingDto(entity.Id, entity.DateRange.StartDate, entity.DateRange.EndDate,
-									entity.TotalPrice, entity.Status, entity.Vehicle.Id, entity.Customer.Id, entity.CreatedAt)).ToList();
+		return entities.Select(GetBookingDto.FromEntity).ToList();
 	}
 }

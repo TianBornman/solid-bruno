@@ -17,7 +17,6 @@ public class ListVehicleQueryHandler : IRequestHandler<ListVehicleQuery, List<Ge
 	{
 		var entities = await uow.VehicleRepository.ListFiltered(request.Skip, request.Take, request.Search);
 
-		return entities.Select(entity => new GetVehicleDto(entity.Id, entity.RegistrationNumber, entity.Make, entity.Model,
-									entity.Year, entity.DailyRate, entity.CreatedAt, entity.IsDeleted)).ToList();
+		return entities.Select(GetVehicleDto.FromEntity).ToList();
 	}
 }
