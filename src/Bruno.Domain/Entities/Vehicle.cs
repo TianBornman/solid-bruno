@@ -11,6 +11,15 @@ public class Vehicle : BaseEntity
 	public required decimal DailyRate { get; set; }
 	public bool IsDeleted { get; set; } = false;
 
+	public void Update(string registrationNumber, string make, string model, int year, decimal dailyRate)
+	{
+		RegistrationNumber = registrationNumber;
+		Make = make;
+		Model = model;
+		Year = year;
+		DailyRate = dailyRate;
+	}
+
 	public void CanBook()
 	{
 		if (IsDeleted)

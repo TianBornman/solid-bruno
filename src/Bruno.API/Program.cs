@@ -23,14 +23,14 @@ public class Program
 		builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 		builder.Services.AddProblemDetails();
 
+		var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+
 		builder.Services.AddCors(options =>
 		{
 			options.AddPolicy("BlazorClient", policy =>
-				policy.WithOrigins(
-					"https://localhost:7037",
-					"http://localhost:5188")
-				.AllowAnyHeader()
-				.AllowAnyMethod());
+				policy.WithOrigins(allowedOrigins)
+					.AllowAnyHeader()
+					.AllowAnyMethod());
 		});
 
 		builder.Services.AddControllers();

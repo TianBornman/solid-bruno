@@ -17,6 +17,19 @@ public class Booking : BaseEntity
 	public Vehicle Vehicle { get; set; } = default!;
 	public Customer Customer { get; set; } = default!;
 
+	public bool Update(DateRange dateRange, decimal totalPrice, BookingStatus status, Guid vehicleId, Guid customerId)
+	{
+		var wasCancelled = Status != BookingStatus.Cancelled && status == BookingStatus.Cancelled;
+
+		DateRange = dateRange;
+		TotalPrice = totalPrice;
+		Status = status;
+		VehicleId = vehicleId;
+		CustomerId = customerId;
+
+		return wasCancelled;
+	}
+
 	public void CanDelete()
 	{
 		if (!DateRange.IsInFuture())

@@ -18,11 +18,7 @@ public class UpdateVehicleCommandHandler : IRequestHandler<UpdateVehicleCommand>
 		var entity = await uow.VehicleRepository.Get(request.Id) 
 			?? throw new NotFoundException("Vehicle not found.");
 
-		entity.RegistrationNumber = request.RegistrationNumber;
-		entity.Make = request.Make;
-		entity.Model = request.Model;
-		entity.Year = request.Year;
-		entity.DailyRate = request.DailyRate;
+		entity.Update(request.RegistrationNumber, request.Make, request.Model, request.Year, request.DailyRate);
 
 		await uow.VehicleRepository.Update(entity);
 		await uow.SaveChanges();

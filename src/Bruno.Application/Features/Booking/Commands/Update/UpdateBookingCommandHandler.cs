@@ -1,5 +1,4 @@
 ﻿using Bruno.Application.Events;
-using Bruno.Domain.Enums;
 using Bruno.Domain.Exceptions;
 using Bruno.Domain.Repositories;
 using MediatR;
@@ -22,19 +21,13 @@ public class UpdateBookingCommandHandler : IRequestHandler<UpdateBookingCommand>
 		var entity = await uow.BookingRepository.Get(request.Id)
 			?? throw new NotFoundException($"Booking not found.");
 
-		var wasCancelled = entity.Status != BookingStatus.Cancelled && request.Status == BookingStatus.Cancelled;
-
 		var dateRange = new Domain.ValueObjects.DateRange(request.StartDate, request.EndDate);
 
 		var hasOverlap = await uow.BookingRepository.HasOverlappingBookingAsync(request.VehicleId, dateRange, excludeBookingId: entity.Id);
 		if (hasOverlap)
 			throw new DomainException("Cannot overlap bookings for the same vehicle.");
 
-		entity.DateRange = dateRange;
-		entity.TotalPrice = request.TotalPrice;
-		entity.Status = request.Status;
-		entity.VehicleId = request.VehicleId;
-		entity.CustomerId = request.CustomerId;
+		var wasCancelled = entity.Update(dateRange, request.TotalPrice, request.Status, request.VehicleId, request.CustomerId);
 
 		await uow.BookingRepository.Update(entity);
 		await uow.SaveChanges();

@@ -18,10 +18,7 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
 		var entity = await uow.CustomerRepository.Get(request.Id) 
 			?? throw new NotFoundException($"Customer not found.");
 
-		entity.FirstName = request.FirstName;
-		entity.LastName = request.LastName;
-		entity.Email = request.Email;
-		entity.PhoneNumber = request.PhoneNumber;
+		entity.Update(request.FirstName, request.LastName, request.Email, request.PhoneNumber);
 
 		await uow.CustomerRepository.Update(entity);
 		await uow.SaveChanges();
