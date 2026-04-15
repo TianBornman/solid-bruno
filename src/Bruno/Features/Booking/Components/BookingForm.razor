@@ -28,7 +28,7 @@
                 @foreach (var v in AvailableVehicles)
                 {
                     <MudSelectItem T="Guid" Value="v.Id">
-                        @v.RegistrationNumber — @v.Year @v.Make @v.Model (£@v.DailyRate.ToString("F2")/day)
+                        @v.RegistrationNumber — @v.Year @v.Make @v.Model (R @v.DailyRate.ToString("F2")/day)
                     </MudSelectItem>
                 }
             </MudSelect>
@@ -57,7 +57,7 @@
                     Duration: <strong>@Model.Days day(s)</strong>
                     @if (selectedVehicle is not null)
                     {
-                        <span> &times; <strong>£@selectedVehicle.DailyRate.ToString("F2")/day</strong> = <strong>£@((Model.Days * selectedVehicle.DailyRate).ToString("F2"))</strong></span>
+                        <span> &times; <strong>R @selectedVehicle.DailyRate.ToString("F2")/day</strong> = <strong>R @((Model.Days * selectedVehicle.DailyRate).ToString("F2"))</strong></span>
                     }
                 </MudAlert>
             </MudItem>
@@ -66,13 +66,13 @@
         <MudItem xs="12" sm="6">
             <MudNumericField T="decimal"
                              @bind-Value="Model.TotalPrice"
-                             Label="Total Price (£)"
+                             Label="Total Price (R)"
                              Required="true"
                              RequiredError="Total price is required."
                              Min="0.01m"
                              Format="F2"
                              Adornment="Adornment.Start"
-                             AdornmentText="£"
+                             AdornmentText="R"
                              HelperText="Auto-calculated from vehicle rate and duration. Editable." />
         </MudItem>
 

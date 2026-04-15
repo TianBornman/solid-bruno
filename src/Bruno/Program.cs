@@ -8,6 +8,7 @@ using Bruno.Shared.Api;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using System.Globalization;
 using System.Net.Http.Headers;
 
 namespace Bruno;
@@ -16,6 +17,11 @@ public class Program
 {
 	public static async Task Main(string[] args)
 	{
+		var culture = new CultureInfo("en-ZA");
+		culture.NumberFormat.CurrencySymbol = "R";
+		CultureInfo.DefaultThreadCurrentCulture = culture;
+		CultureInfo.DefaultThreadCurrentUICulture = culture;
+
 		var builder = WebAssemblyHostBuilder.CreateDefault(args);
 		builder.RootComponents.Add<App>("#app");
 		builder.RootComponents.Add<HeadOutlet>("head::after");
